@@ -40,6 +40,25 @@ export const en = {
   "season.progress.completed": "Completed",
   "season.progress.remaining": "Remaining",
   
+  // Dashboard
+  "dashboard.currentSession": "Current Session",
+  "dashboard.liveRecent": "Live / Recent",
+  "dashboard.championship": "Championship Standings",
+  "dashboard.drivers": "Drivers",
+  "dashboard.constructors": "Constructors",
+  "dashboard.news": "F1 News Center",
+  "dashboard.newsSubtitle": "The latest news, insights, and updates from the paddock.",
+  "dashboard.latestNews": "Latest News",
+  "dashboard.latestVideos": "Latest Videos",
+  "dashboard.viewAll": "View all",
+  "dashboard.circuitAnalytics": "Circuit Analytics",
+  "dashboard.circuitDesc": "Live telemetry, track positions & sector times",
+  "dashboard.openTrackMap": "Open Track Map",
+  "dashboard.notAvailable": "Not Available",
+  "dashboard.latestEvent": "LATEST EVENT",
+  "dashboard.seasonExplorer": "Season Explorer",
+  "dashboard.liveData": "Live Data",
+  
   // General & States
   "state.noData": "No data available",
   "state.error": "An error occurred.",

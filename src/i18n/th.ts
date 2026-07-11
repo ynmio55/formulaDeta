@@ -42,6 +42,25 @@ export const th: Translations = {
   "season.progress.completed": "เสร็จสิ้น",
   "season.progress.remaining": "เหลือ",
   
+  // Dashboard
+  "dashboard.currentSession": "เซสชันปัจจุบัน",
+  "dashboard.liveRecent": "สด / ล่าสุด",
+  "dashboard.championship": "ตารางคะแนนสะสม",
+  "dashboard.drivers": "นักแข่ง",
+  "dashboard.constructors": "ทีมผู้สร้าง",
+  "dashboard.news": "ศูนย์ข่าวสาร F1",
+  "dashboard.newsSubtitle": "ข่าวสารล่าสุด บทวิเคราะห์ และอัปเดตจากแพดด็อก",
+  "dashboard.latestNews": "ข่าวสารล่าสุด",
+  "dashboard.latestVideos": "วิดีโอล่าสุด",
+  "dashboard.viewAll": "ดูทั้งหมด",
+  "dashboard.circuitAnalytics": "วิเคราะห์สนามแข่ง",
+  "dashboard.circuitDesc": "ดูเทเลเมทรี ตำแหน่งรถ และเวลาแต่ละเซกเตอร์แบบเรียลไทม์",
+  "dashboard.openTrackMap": "เปิดแผนผังสนาม",
+  "dashboard.notAvailable": "ยังไม่เปิดใช้งาน",
+  "dashboard.latestEvent": "อีเวนต์ล่าสุด",
+  "dashboard.seasonExplorer": "สำรวจฤดูกาล",
+  "dashboard.liveData": "ข้อมูลสด",
+
   // General & States
   "state.noData": "ไม่มีข้อมูล",
   "state.error": "เกิดข้อผิดพลาด",

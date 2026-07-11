@@ -195,7 +195,7 @@ export default function OverviewDashboard() {
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-4">
               <span className="px-3 py-1 bg-[var(--color-f1-red)] text-white text-[10px] font-bold uppercase tracking-widest rounded-sm f1-skew flex items-center shadow-[0_0_10px_rgba(255,24,1,0.5)]">
-                <span className="f1-skew-reverse">LATEST EVENT</span>
+                <span className="f1-skew-reverse">{t("dashboard.latestEvent")}</span>
               </span>
               <span className="text-[var(--color-text-secondary)] text-xs md:text-sm font-mono tracking-wider flex items-center gap-2">
                 {meeting.country_flag && <img src={meeting.country_flag} alt="flag" className="w-5 h-3.5 object-cover rounded-[2px]" />}
@@ -218,14 +218,14 @@ export default function OverviewDashboard() {
               }}
               className="px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg backdrop-blur-md text-xs md:text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 h-fit"
             >
-              Season Explorer
+              {t("dashboard.seasonExplorer")}
             </button>
             {sessionKey && (
               <Link 
                 href={`/session?key=${sessionKey}`}
                 className="px-5 py-3 bg-[var(--color-f1-red)] hover:bg-[var(--color-f1-red-hover)] text-white rounded-lg text-xs md:text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_20px_rgba(255,24,1,0.3)] h-fit"
               >
-                <PlayCircle className="w-5 h-5" /> Live Data
+                <PlayCircle className="w-5 h-5" /> {t("dashboard.liveData")}
               </Link>
             )}
           </div>
@@ -262,12 +262,11 @@ export default function OverviewDashboard() {
               
               <div className="flex items-center justify-between mb-6 relative z-10">
                 <div className="flex items-center gap-2 text-[var(--color-text-tertiary)] group-hover:text-[var(--color-text-secondary)] transition-colors">
-                  <Activity className="w-4 h-4" />
-                  <h3 className="text-metadata">Current Session</h3>
+                  <h3 className="text-metadata">{t("dashboard.currentSession")}</h3>
                 </div>
                 {latestSession && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: sessionColor }}>Live / Recent</span>
+                    <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: sessionColor }}>{t("dashboard.liveRecent")}</span>
                     <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: sessionColor, boxShadow: `0 0 8px ${sessionColor}` }}></span>
                   </div>
                 )}
@@ -402,7 +401,7 @@ export default function OverviewDashboard() {
           <div className="absolute inset-0 z-10 flex flex-col justify-between p-6 md:p-8">
             {/* Top row: label + flag */}
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-white/80 uppercase tracking-widest">Circuit Analytics</span>
+              <span className="text-xs font-black text-white/80 uppercase tracking-widest">{t("dashboard.circuitAnalytics")}</span>
               {meeting.country_flag && (
                 <img src={meeting.country_flag} alt="flag" className="w-8 h-5 object-cover rounded-sm shadow-md" />
               )}
@@ -414,7 +413,7 @@ export default function OverviewDashboard() {
               <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight leading-none drop-shadow-lg">
                 {meeting.circuit_short_name}
               </h3>
-              <p className="text-white/70 text-sm mt-2 font-medium">Live telemetry, track positions &amp; sector times</p>
+              <p className="text-white/70 text-sm mt-2 font-medium">{t("dashboard.circuitDesc")}</p>
             </div>
 
             {/* Bottom: CTA button */}
@@ -424,11 +423,11 @@ export default function OverviewDashboard() {
                   href={`/track?key=${sessionKey}`} 
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[var(--color-f1-red)] hover:text-white transition-colors shadow-lg"
                 >
-                  <Map className="w-4 h-4" /> Open Track Map <ChevronRight className="w-3.5 h-3.5" />
+                  <Map className="w-4 h-4" /> {t("dashboard.openTrackMap")} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
               ) : (
                 <button disabled className="inline-flex items-center gap-2 px-5 py-2.5 bg-black/50 text-white/40 rounded-lg text-xs font-bold uppercase tracking-widest cursor-not-allowed backdrop-blur-md">
-                  <Map className="w-4 h-4" /> Not Available
+                  <Map className="w-4 h-4" /> {t("dashboard.notAvailable")}
                 </button>
               )}
             </div>
@@ -443,10 +442,10 @@ export default function OverviewDashboard() {
         <section>
           <div className="flex justify-between items-end mb-6 border-b border-[var(--color-border-subtle)] pb-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <Newspaper className="w-5 h-5 text-[var(--color-f1-red)]"/> Latest News
+              <Newspaper className="w-5 h-5 text-[var(--color-f1-red)]"/> {t("dashboard.latestNews")}
             </h2>
             <Link href="/news" className="text-sm text-[var(--color-f1-red)] hover:text-white transition-colors flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3"/>
+              {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3"/>
             </Link>
           </div>
           
@@ -469,10 +468,10 @@ export default function OverviewDashboard() {
         <section>
           <div className="flex justify-between items-end mb-6 border-b border-[var(--color-border-subtle)] pb-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <Video className="w-5 h-5 text-[var(--color-f1-red)]"/> Latest Videos
+              <Video className="w-5 h-5 text-[var(--color-f1-red)]"/> {t("dashboard.latestVideos")}
             </h2>
             <Link href="/video" className="text-sm text-[var(--color-f1-red)] hover:text-white transition-colors flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3"/>
+              {t("dashboard.viewAll")} <ArrowRight className="w-3 h-3"/>
             </Link>
           </div>
           
