@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg-base: #000000;
+  --color-surface-1: #0a0a0a;
+  --color-surface-2: #111111;
+  --color-surface-3: #1a1a1a;
+  
+  --color-border-subtle: #222222;
+  --color-border-strong: #333333;
+  --color-border-hover: #444444;
+
+  --color-f1-red: #FF1801;
+  --color-f1-red-hover: #D01400;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #aaaaaa;
+  --color-text-tertiary: #666666;
+
+  --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .bento-card {
+    @apply bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl overflow-hidden transition-all duration-300;
+  }
+  
+  .bento-card:hover {
+    @apply border-[var(--color-border-hover)];
+  }
+
+  .text-metadata {
+    @apply text-xs uppercase tracking-widest text-[var(--color-text-secondary)] font-bold;
+  }
+
+  .text-value {
+    @apply text-white font-bold tabular-nums;
+  }
+
+  .glass-panel {
+    @apply bg-black/60 backdrop-blur-xl border border-white/10;
+  }
+
+  .f1-skew {
+    @apply -skew-x-[12deg];
+  }
+
+  .f1-skew-reverse {
+    @apply skew-x-[12deg];
+  }
+}
+
+/* Custom Scrollbar for Terminal aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-hover);
 }

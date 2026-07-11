@@ -1,0 +1,141 @@
+{
+  "/v1/car_data": "No data returned for inference",
+  "/v1/championship_drivers": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "driver_number": "number",
+    "position_start": "number",
+    "position_current": "number",
+    "points_start": "number",
+    "points_current": "number"
+  },
+  "/v1/championship_teams": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "team_name": "string",
+    "position_start": "number",
+    "position_current": "number",
+    "points_start": "number",
+    "points_current": "number"
+  },
+  "/v1/drivers": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "driver_number": "number",
+    "broadcast_name": "string",
+    "full_name": "string",
+    "name_acronym": "string",
+    "team_name": "string",
+    "team_colour": "string",
+    "first_name": "string",
+    "last_name": "string",
+    "headshot_url": "string",
+    "country_code": "object"
+  },
+  "/v1/intervals": {
+    "date": "string",
+    "session_key": "number",
+    "driver_number": "number",
+    "gap_to_leader": "number",
+    "interval": "number",
+    "meeting_key": "number"
+  },
+  "/v1/laps": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "driver_number": "number",
+    "lap_number": "number",
+    "date_start": "string",
+    "duration_sector_1": "number",
+    "duration_sector_2": "number",
+    "duration_sector_3": "number",
+    "i1_speed": "number",
+    "i2_speed": "number",
+    "is_pit_out_lap": "boolean",
+    "lap_duration": "number",
+    "segments_sector_1": "object",
+    "segments_sector_2": "object",
+    "segments_sector_3": "object",
+    "st_speed": "number"
+  },
+  "/v1/location": "No data returned for inference",
+  "/v1/meetings": {
+    "meeting_key": "number",
+    "meeting_name": "string",
+    "meeting_official_name": "string",
+    "location": "string",
+    "country_key": "number",
+    "country_code": "string",
+    "country_name": "string",
+    "country_flag": "string",
+    "circuit_key": "number",
+    "circuit_short_name": "string",
+    "circuit_type": "string",
+    "circuit_info_url": "string",
+    "circuit_image": "string",
+    "gmt_offset": "string",
+    "date_start": "string",
+    "date_end": "string",
+    "year": "number",
+    "is_cancelled": "boolean"
+  },
+  "/v1/overtakes": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "overtaking_driver_number": "number",
+    "overtaken_driver_number": "number",
+    "date": "string",
+    "position": "number"
+  },
+  "/v1/pit": {
+    "date": "string",
+    "session_key": "number",
+    "stop_duration": "object",
+    "driver_number": "number",
+    "meeting_key": "number",
+    "lap_number": "number",
+    "pit_duration": "number",
+    "lane_duration": "number"
+  },
+  "/v1/position": {
+    "date": "string",
+    "session_key": "number",
+    "meeting_key": "number",
+    "driver_number": "number",
+    "position": "number"
+  },
+  "/v1/race_control": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "date": "string",
+    "driver_number": "object",
+    "lap_number": "number",
+    "category": "string",
+    "flag": "string",
+    "scope": "string",
+    "sector": "object",
+    "qualifying_phase": "object",
+    "message": "string"
+  },
+  "/v1/sessions": "No data returned for inference",
+  "/v1/session_result": "No data returned for inference",
+  "/v1/starting_grid": "No data returned for inference",
+  "/v1/stints": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "stint_number": "number",
+    "driver_number": "number",
+    "lap_start": "number",
+    "lap_end": "number",
+    "compound": "string",
+    "tyre_age_at_start": "number"
+  },
+  "/v1/team_radio": {
+    "meeting_key": "number",
+    "session_key": "number",
+    "driver_number": "number",
+    "date": "string",
+    "recording_url": "string"
+  },
+  "/v1/weather": "No data returned for inference"
+}

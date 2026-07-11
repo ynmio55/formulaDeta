@@ -1,0 +1,35 @@
+{
+  "/v1/car_data": "Still no data",
+  "/v1/location": "Still no data",
+  "/v1/sessions": {
+    "session_key": "number",
+    "session_type": "string",
+    "session_name": "string",
+    "date_start": "string",
+    "date_end": "string",
+    "meeting_key": "number",
+    "circuit_key": "number",
+    "circuit_short_name": "string",
+    "country_key": "number",
+    "country_code": "string",
+    "country_name": "string",
+    "location": "string",
+    "gmt_offset": "string",
+    "year": "number",
+    "is_cancelled": "boolean"
+  },
+  "/v1/session_result": {
+    "position": "number",
+    "driver_number": "number",
+    "number_of_laps": "number",
+    "dnf": "boolean",
+    "dns": "boolean",
+    "dsq": "boolean",
+    "duration": "number",
+    "gap_to_leader": "number",
+    "meeting_key": "number",
+    "session_key": "number"
+  },
+  "/v1/starting_grid": "Still no data",
+  "/v1/weather": "Still no data"
+}
