@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "OpenF1 Data Platform",
-  description: "Advanced Formula 1 telemetry and race analytics dashboard",
+  title: "FormulaDeta",
+  description: "F1 Data and Telemetry Platform",
 };
 
 export default function RootLayout({
