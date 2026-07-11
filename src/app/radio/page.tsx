@@ -5,7 +5,7 @@ import { useDrivers } from "@/hooks/openf1";
 import { fetchOpenF1 } from "@/lib/openf1/client";
 import { TeamRadio } from "@/lib/openf1/types";
 import { useState, useEffect } from "react";
-import { Radio as RadioIcon, PlayCircle, Loader2 } from "lucide-react";
+import { Radio as RadioIcon, PlayCircle, Loader2, MicOff, WifiOff } from "lucide-react";
 import { format } from "date-fns";
 import { SessionLayout } from "@/components/session/SessionLayout";
 import { Suspense } from "react";
@@ -106,9 +106,22 @@ function TeamRadioContent() {
              </div>
 
              {error ? (
-               <div className="text-[var(--color-f1-red)] p-8 text-center">{error}</div>
+               <div className="flex flex-col items-center justify-center py-20 gap-4">
+                 <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                   <WifiOff className="w-8 h-8 text-red-500/60" />
+                 </div>
+                 <p className="text-gray-500 text-sm text-center max-w-xs">ไม่สามารถโหลดข้อมูล Radio ได้<br/>API อาจยังไม่มีข้อมูลสำหรับ session นี้</p>
+               </div>
              ) : radios.length === 0 && !loading ? (
-               <div className="text-gray-500 p-8 text-center">No radio communications found for the selected criteria.</div>
+               <div className="flex flex-col items-center justify-center py-20 gap-4">
+                 <div className="w-16 h-16 rounded-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] flex items-center justify-center">
+                   <MicOff className="w-8 h-8 text-gray-600" />
+                 </div>
+                 <div className="text-center">
+                   <p className="text-gray-400 font-medium">ไม่พบข้อมูล Radio</p>
+                   <p className="text-gray-600 text-sm mt-1">ยังไม่มีคลิปวิทยุทีมสำหรับ Session นี้<br/>หรืออาจเป็นเพราะข้อมูลยังไม่ถูกเผยแพร่</p>
+                 </div>
+               </div>
              ) : (
                <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
                  {radios.map((radio, i) => {

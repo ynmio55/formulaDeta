@@ -2,10 +2,12 @@
 
 import { useMeetings, useSessions } from "@/hooks/openf1";
 import { formatDateTime, getTimezoneLabel } from "@/lib/date-utils";
-import { ArrowLeft, Clock, MapPin, Search } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Search, Newspaper } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { getF1News, F1NewsItem } from "@/services/newsService";
+import { NewsCard, NewsCardSkeleton } from "@/components/media/NewsCard";
 
 function MeetingContent() {
   const searchParams = useSearchParams();
@@ -18,6 +20,20 @@ function MeetingContent() {
   // We'll update the hook or just use `fetchOpenF1` directly with `useQuery`.
   
   const { data: sessions, isLoading: sessionsLoading } = useSessions(meetingKey || undefined);
+  
+  const [news, setNews] = useState<F1NewsItem[]>([]);
+  const [loadingNews, setLoadingNews] = useState(false);
+  
+  useEffect(() => {
+    if (sessions && sessions.length > 0) {
+      setLoadingNews(true);
+      // Fetch news related to the circuit or meeting name
+      getF1News(sessions[0].circuit_short_name || 'Grand Prix')
+        .then(data => setNews(data))
+        .catch(() => setNews([]))
+        .finally(() => setLoadingNews(false));
+    }
+  }, [sessions]);
 
   if (!meetingKey) {
     return <div className="text-gray-400">Please select a meeting from the Season Explorer.</div>;
@@ -72,6 +88,31 @@ function MeetingContent() {
           </div>
         </section>
       )}
+
+      {/* Meeting News Section */}
+      <section className="pt-8">
+        <h2 className="text-xl font-bold mb-6 border-l-4 border-[var(--color-f1-red)] pl-3 flex items-center gap-2">
+          <Newspaper className="w-5 h-5"/> Related News
+        </h2>
+        
+        {loadingNews ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <NewsCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : news.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {news.slice(0, 4).map(article => (
+              <NewsCard key={article.id} article={article} />
+            ))}
+          </div>
+        ) : !sessionsLoading && (
+          <div className="p-16 text-center text-gray-500 bg-[var(--color-surface-1)] rounded-xl border border-[var(--color-border-subtle)]">
+            ยังไม่มีข่าวสารเกี่ยวกับสนามนี้ (No recent news found for this meeting)
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -36,7 +36,7 @@ export default function RootLayout({
           </Suspense>
           <main className="flex-1 w-full overflow-y-auto h-screen bg-[var(--color-bg-base)]">
             <TopBar />
-            <div className="px-4 2xl:px-8 pt-0 pb-8">
+            <div className="px-4 2xl:px-8 pt-0 pb-24 md:pb-8">
               {children}
             </div>
           </main>

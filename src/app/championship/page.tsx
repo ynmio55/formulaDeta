@@ -5,13 +5,19 @@ import { useQuery } from "@tanstack/react-query";
 import { Trophy, Users, ShieldAlert } from "lucide-react";
 import { useState, Suspense } from "react";
 import { useAppStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
 
 function useDriversChampionship(year: number) {
   return useQuery({
     queryKey: ["championship_drivers", year],
-    // The endpoint is beta. We use year directly or meeting_key. 
-    // The beta endpoints may only work by meeting_key. Let's use latest meeting for the year.
     queryFn: () => fetchOpenF1("/v1/championship_drivers", { meeting_key: "latest" }),
+  });
+}
+
+function useAllDrivers() {
+  return useQuery({
+    queryKey: ["all_drivers", "latest"],
+    queryFn: () => fetchOpenF1("/v1/drivers", { session_key: "latest" }),
   });
 }
 
@@ -25,12 +31,56 @@ function useTeamsChampionship(year: number) {
 function ChampionshipContent() {
   const { year } = useAppStore();
   const [activeTab, setActiveTab] = useState<"drivers" | "teams">("drivers");
+  const router = useRouter();
   
-  const { data: driversStats, isLoading: loadingDrivers, isError: errDrivers } = useDriversChampionship(year);
-  const { data: teamsStats, isLoading: loadingTeams, isError: errTeams } = useTeamsChampionship(year);
+  const { data: rawDriversStats, isLoading: loadingDrivers, isError: errDrivers } = useDriversChampionship(year);
+  const { data: rawTeamsStats, isLoading: loadingTeams, isError: errTeams } = useTeamsChampionship(year);
+  const { data: allDrivers } = useAllDrivers();
+
+  const driversStats = rawDriversStats ? Array.from(new Map(rawDriversStats.map((d: any) => [d.driver_number, d])).values()).sort((a, b) => (b.points_current || 0) - (a.points_current || 0)) : [];
+  const teamsStats = rawTeamsStats ? Array.from(new Map(rawTeamsStats.map((t: any) => [t.team_name, t])).values()).sort((a, b) => (b.points_current || 0) - (a.points_current || 0)) : [];
+  
+  const driversMap = new Map();
+  if (allDrivers) {
+    allDrivers.forEach((d: any) => driversMap.set(d.driver_number, d));
+  }
+
+  const getTeamCarUrl = (name: string) => {
+    if (year === 2026) {
+      const strippedName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return `/cars/2026/2026${strippedName}carright.avif`;
+    }
+
+    const map: Record<string, string> = {
+      'Mercedes': 'mercedes',
+      'Ferrari': 'ferrari',
+      'McLaren': 'mclaren',
+      'Red Bull Racing': 'red-bull-racing',
+      'Alpine': 'alpine',
+      'Racing Bulls': 'rb',
+      'Haas F1 Team': 'haas-f1-team',
+      'Williams': 'williams',
+      'Aston Martin': 'aston-martin',
+      'Audi': 'kick-sauber', 
+      'Cadillac': 'generic',
+      'Kick Sauber': 'kick-sauber',
+    };
+    const slug = map[name] || name.toLowerCase().replace(/\s+/g, '-');
+    return `https://media.formula1.com/d_team_car_fallback_image.png/content/dam/fom-website/teams/2024/${slug}.png.transform/9col/image.png`;
+  };
+
+  const getPodiumOrder = (items: any[]) => {
+    return items; // Let CSS flex order handle the visual arrangement
+  };
+
+  const top3Drivers = driversStats.slice(0, 3);
+  const restDrivers = driversStats.slice(3);
+
+  const top3Teams = teamsStats.slice(0, 3);
+  const restTeams = teamsStats.slice(3);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <header className="flex flex-col gap-2 border-b border-[var(--color-border-subtle)] pb-6">
         <h1 className="text-3xl font-bold tracking-tight">Championship Standings</h1>
         <p className="text-gray-400">Current season standings. (Note: These endpoints are currently in beta).</p>
@@ -51,9 +101,9 @@ function ChampionshipContent() {
         </button>
       </div>
 
-      <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl overflow-hidden">
+      <div className="animate-in fade-in duration-500">
         {activeTab === "drivers" && (
-          <div>
+          <div className="space-y-12">
             {loadingDrivers ? (
               <div className="p-8 text-center text-gray-500 animate-pulse">Loading driver standings...</div>
             ) : errDrivers ? (
@@ -62,27 +112,102 @@ function ChampionshipContent() {
                  Beta endpoint is currently unavailable or returned an error.
                </div>
             ) : driversStats && driversStats.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-[var(--color-surface-3)] text-gray-400 border-b border-[var(--color-border-strong)]">
-                    <tr>
-                      <th className="px-6 py-4 font-medium">Pos</th>
-                      <th className="px-6 py-4 font-medium w-full">Driver No</th>
-                      <th className="px-6 py-4 font-medium text-right">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#222]">
-                    {/* Sort by points_current descending */}
-                    {[...driversStats].sort((a, b) => (b.points_current || 0) - (a.points_current || 0)).map((driver) => (
-                      <tr key={driver.driver_number} className="hover:bg-[#151515]">
-                        <td className="px-6 py-4 font-bold">{driver.position_current}</td>
-                        <td className="px-6 py-4 font-medium">#{driver.driver_number}</td>
-                        <td className="px-6 py-4 text-right font-semibold">{driver.points_current}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* Driver Podium */}
+                {top3Drivers.length >= 3 && (
+                  <div className="flex flex-col md:flex-row items-end justify-center gap-4 md:gap-6 px-2 md:px-4 pt-10">
+                    {top3Drivers.map((driver, index) => {
+                      const info = driversMap.get(driver.driver_number);
+                      const displayName = info ? info.full_name : `Driver #${driver.driver_number}`;
+                      const photoUrl = info?.headshot_url?.replace('1col', '9col');
+                      const teamColor = info?.team_colour || "333333";
+                      const isFirst = driver.position_current === 1;
+                      const orderClass = index === 0 ? "order-1 md:order-2" : index === 1 ? "order-2 md:order-1" : "order-3 md:order-3";
+
+                      return (
+                        <div 
+                          key={driver.driver_number} 
+                          onClick={() => router.push(`/driver/${driver.driver_number}`)}
+                          className={`relative rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-2 w-full md:w-1/3 flex-shrink-0 group shadow-2xl ${orderClass} ${isFirst ? 'md:h-[400px] h-80 z-10 md:scale-105' : 'md:h-80 h-72 opacity-95 hover:opacity-100 z-0'}`}
+                          style={{
+                            background: `linear-gradient(135deg, #${teamColor} 0%, rgba(0,0,0,0.95) 100%)`,
+                            borderTop: `4px solid #${teamColor}`
+                          }}
+                        >
+                          <div className="absolute top-6 left-6 z-20">
+                            <div className="text-white font-black text-3xl md:text-4xl flex items-baseline gap-1">
+                              {driver.position_current}
+                              <span className="text-base font-bold opacity-80 uppercase">{
+                                driver.position_current === 1 ? 'st' : driver.position_current === 2 ? 'nd' : 'rd'
+                              }</span>
+                            </div>
+                            <div className="text-white font-bold text-xl md:text-2xl leading-tight mt-3">{displayName}</div>
+                            <div className="text-gray-300 text-sm md:text-base">{info?.team_name}</div>
+                          </div>
+                          
+                          <div className="absolute bottom-6 left-6 z-20">
+                            <div className="text-white font-black text-3xl md:text-4xl">{driver.points_current} <span className="text-sm font-bold opacity-80">PTS</span></div>
+                          </div>
+
+                          {photoUrl && (
+                            <img 
+                              src={photoUrl} 
+                              alt={displayName} 
+                              className={`absolute bottom-0 right-[-10%] md:right-[-5%] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] transition-transform duration-500 group-hover:scale-105 ${isFirst ? 'h-[85%] md:h-[95%]' : 'h-[75%] md:h-[90%]'}`}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Remaining Drivers List */}
+                <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl overflow-hidden mt-8 shadow-lg">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-[var(--color-surface-3)] text-gray-400 border-b border-[var(--color-border-strong)]">
+                        <tr>
+                          <th className="px-6 py-4 font-medium">Pos</th>
+                          <th className="px-6 py-4 font-medium w-full">Driver No</th>
+                          <th className="px-6 py-4 font-medium text-right">Points</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#222]">
+                        {restDrivers.map((driver) => {
+                          const info = driversMap.get(driver.driver_number);
+                          const displayName = info ? info.full_name : `Driver #${driver.driver_number}`;
+                          const photoUrl = info?.headshot_url?.replace('1col', '2col');
+                          
+                          return (
+                            <tr 
+                              key={driver.driver_number} 
+                              onClick={() => router.push(`/driver/${driver.driver_number}`)}
+                              className="hover:bg-[#151515] cursor-pointer transition-colors"
+                            >
+                              <td className="px-6 py-4 font-bold text-gray-400">{driver.position_current}</td>
+                              <td className="px-6 py-4 font-medium group flex items-center gap-4">
+                                {photoUrl ? (
+                                  <img src={photoUrl} alt={displayName} className="w-10 h-10 object-cover rounded-full bg-white/5 border border-white/10" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                    <Users className="w-5 h-5 text-gray-500" />
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="text-white text-base">{displayName}</div>
+                                  <div className="text-gray-500 text-xs">#{driver.driver_number} {info?.team_name ? `• ${info.team_name}` : ''}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-right font-semibold text-lg">{driver.points_current}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="p-8 text-center text-gray-500">No driver standings available.</div>
             )}
@@ -90,7 +215,7 @@ function ChampionshipContent() {
         )}
 
         {activeTab === "teams" && (
-          <div>
+          <div className="space-y-12">
              {loadingTeams ? (
               <div className="p-8 text-center text-gray-500 animate-pulse">Loading constructor standings...</div>
             ) : errTeams ? (
@@ -99,26 +224,108 @@ function ChampionshipContent() {
                  Beta endpoint is currently unavailable or returned an error.
                </div>
             ) : teamsStats && teamsStats.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-[var(--color-surface-3)] text-gray-400 border-b border-[var(--color-border-strong)]">
-                    <tr>
-                      <th className="px-6 py-4 font-medium">Pos</th>
-                      <th className="px-6 py-4 font-medium w-full">Team</th>
-                      <th className="px-6 py-4 font-medium text-right">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#222]">
-                    {[...teamsStats].sort((a, b) => (b.points_current || 0) - (a.points_current || 0)).map((team, idx) => (
-                      <tr key={team.team_name || idx} className="hover:bg-[#151515]">
-                        <td className="px-6 py-4 font-bold">{team.position_current}</td>
-                        <td className="px-6 py-4 font-medium">{team.team_name}</td>
-                        <td className="px-6 py-4 text-right font-semibold">{team.points_current}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* Team Podium */}
+                {top3Teams.length >= 3 && (
+                  <div className="flex flex-col md:flex-row items-end justify-center gap-4 md:gap-6 px-2 md:px-4 pt-10">
+                    {top3Teams.map((team, index) => {
+                      const teamDriver = Array.from(driversMap.values()).find(d => d.team_name === team.team_name);
+                      const teamColor = teamDriver?.team_colour || "333333";
+                      const isFirst = team.position_current === 1;
+                      const carUrl = getTeamCarUrl(team.team_name);
+                      const orderClass = index === 0 ? "order-1 md:order-2" : index === 1 ? "order-2 md:order-1" : "order-3 md:order-3";
+                      
+                      const driversInTeam = Array.from(driversMap.values()).filter(d => d.team_name === team.team_name);
+
+                      return (
+                        <div 
+                          key={team.team_name} 
+                          onClick={() => router.push(`/team/${encodeURIComponent(team.team_name)}`)}
+                          className={`relative rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-2 w-full md:w-1/3 flex-shrink-0 group shadow-2xl ${orderClass} ${isFirst ? 'md:h-[360px] h-80 z-10 md:scale-105' : 'md:h-80 h-72 opacity-95 hover:opacity-100 z-0'}`}
+                          style={{
+                            background: `linear-gradient(135deg, #${teamColor} 0%, rgba(0,0,0,0.95) 100%)`,
+                            borderTop: `4px solid #${teamColor}`
+                          }}
+                        >
+                          <div className="absolute top-6 left-6 z-20">
+                            <div className="text-white font-black text-3xl md:text-4xl flex items-baseline gap-1">
+                              {team.position_current}
+                              <span className="text-base font-bold opacity-80 uppercase">{
+                                team.position_current === 1 ? 'st' : team.position_current === 2 ? 'nd' : 'rd'
+                              }</span>
+                            </div>
+                            <div className="text-white font-bold text-xl md:text-2xl leading-tight mt-3">{team.team_name}</div>
+                            <div className="text-white font-black text-2xl md:text-3xl mt-1">{team.points_current} <span className="text-xs font-bold opacity-80">PTS</span></div>
+                            
+                            <div className="mt-4 space-y-1">
+                              {driversInTeam.map(d => (
+                                <div key={d.driver_number} className="text-sm text-gray-200">
+                                  <span className="font-medium opacity-70">{d.first_name}</span> <span className="font-bold">{d.last_name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <img 
+                            src={carUrl} 
+                            alt={team.team_name} 
+                            className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] md:w-[95%] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] transition-transform duration-500 group-hover:scale-105"
+                            onError={(e) => { e.currentTarget.style.display = 'none' }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Remaining Teams Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+                  {restTeams.map((team, idx) => {
+                    const teamDriver = Array.from(driversMap.values()).find(d => d.team_name === team.team_name);
+                    const teamColor = teamDriver?.team_colour || "333333";
+                    const carUrl = getTeamCarUrl(team.team_name);
+                    const driversInTeam = Array.from(driversMap.values()).filter(d => d.team_name === team.team_name);
+
+                    return (
+                      <div 
+                        key={team.team_name || idx} 
+                        onClick={() => router.push(`/team/${encodeURIComponent(team.team_name)}`)}
+                        className="relative rounded-2xl overflow-hidden cursor-pointer transition-transform hover:-translate-y-2 group shadow-xl h-64 md:h-72"
+                        style={{
+                          background: `linear-gradient(135deg, #${teamColor} 0%, rgba(0,0,0,0.95) 100%)`,
+                          borderTop: `4px solid #${teamColor}`
+                        }}
+                      >
+                        <div className="absolute top-6 left-6 z-20">
+                          <div className="text-white font-bold text-xl md:text-2xl leading-tight">{team.team_name}</div>
+                          
+                          <div className="mt-3 flex items-center gap-4">
+                            {driversInTeam.map(d => (
+                              <div key={d.driver_number} className="flex items-center gap-2">
+                                {d.headshot_url && <img src={d.headshot_url.replace('1col', '2col')} className="w-6 h-6 rounded-full object-cover bg-white/10" />}
+                                <div className="text-xs text-gray-200">
+                                  <span className="opacity-70">{d.first_name}</span> <span className="font-bold uppercase">{d.last_name}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="absolute top-6 right-6 z-20 text-right">
+                          <div className="text-white font-black text-2xl">{team.points_current} <span className="text-xs font-bold opacity-80">PTS</span></div>
+                        </div>
+                        
+                        <img 
+                          src={carUrl} 
+                          alt={team.team_name} 
+                          className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] transition-transform duration-500 group-hover:scale-105"
+                          onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             ) : (
               <div className="p-8 text-center text-gray-500">No constructor standings available.</div>
             )}
