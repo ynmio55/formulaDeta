@@ -15,12 +15,12 @@ export default function TopBar() {
         {/* Brand Name on the left next to Sidebar */}
         <div className="hidden md:flex items-center">
           <h2 className="text-xl font-bold tracking-tight text-white leading-tight flex items-center gap-1">
-            Formula<span className="text-[var(--color-f1-red)] font-normal">Deta</span>
+            Formula<span className="text-[var(--color-f1-red)] font-normal">Data</span>
           </h2>
         </div>
         <GlobalSearch />
       </div>
-      
+
       <div className="flex items-center gap-4">
       </div>
     </div>
