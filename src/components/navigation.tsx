@@ -130,8 +130,8 @@ export default function Navigation() {
             "p-6 border-t border-[var(--color-border-subtle)] text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-widest leading-relaxed transition-opacity duration-300 whitespace-nowrap bg-[var(--color-surface-1)] flex flex-col gap-1",
             isExpanded ? "opacity-100" : "opacity-0 h-0 hidden py-0 border-transparent"
           )}>
-            <p>Data by OpenF1</p>
-            <p>V 1.0.4-BETA</p>
+            <p></p>
+
             <div className="mt-2 pt-2 border-t border-[var(--color-border-subtle)]/50">
               <p className="text-[var(--color-text-secondary)] font-medium">© Mio Ngaolakorn</p>
               <p className="text-[8px] opacity-70">All Rights Reserved.</p>
