@@ -13,6 +13,15 @@ export const th: Translations = {
   "nav.radio": "วิทยุทีม",
   "nav.championship": "ตารางคะแนน",
   "nav.apiExplorer": "เครื่องมือ API",
+  "nav.live": "Motorsports",
+  
+  // Meeting Details
+  "meeting.backToSeason": "กลับไปหน้าสำรวจฤดูกาล",
+  "meeting.details": "รายละเอียดอีเวนต์",
+  "meeting.sessions": "เซสชันการแข่งขัน",
+  "meeting.relatedNews": "ข่าวสารที่เกี่ยวข้อง",
+  "meeting.noSessions": "ไม่พบข้อมูลเซสชันสำหรับการแข่งขันนี้",
+  "meeting.viewDetails": "ดูรายละเอียด",
   
   // Settings
   "settings.language": "ภาษา",

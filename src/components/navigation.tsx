@@ -20,7 +20,8 @@ import {
   TerminalSquare,
   Search,
   Newspaper,
-  Video
+  Video,
+  Tv
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -31,6 +32,7 @@ const navGroups = [
       { key: "nav.overview", href: "/", icon: LayoutDashboard },
       { key: "nav.season", href: "/season", icon: Calendar },
       { key: "nav.championship", href: "/championship", icon: Trophy },
+      { key: "nav.live", href: "/stream", icon: Tv },
       { key: "news", href: "/news", icon: Newspaper, label: "F1 News" },
       { key: "video", href: "/video", icon: Video, label: "F1 Video" },
     ]

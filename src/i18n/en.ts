@@ -11,6 +11,15 @@ export const en = {
   "nav.radio": "Radio",
   "nav.championship": "Championship",
   "nav.apiExplorer": "API Explorer",
+  "nav.live": "Motorsports",
+  
+  // Meeting Details
+  "meeting.backToSeason": "Back to Season Explorer",
+  "meeting.details": "Meeting Details",
+  "meeting.sessions": "Sessions",
+  "meeting.relatedNews": "Related News",
+  "meeting.noSessions": "No sessions found for this meeting.",
+  "meeting.viewDetails": "View details",
   
   // Settings
   "settings.language": "Language",
