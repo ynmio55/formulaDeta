@@ -77,11 +77,13 @@ function MeetingContent() {
                     <span className="f1-skew-reverse">ROUND {firstSession.meeting_key}</span>
                   </span>
                   <span className="text-white/80 text-xs md:text-sm font-mono tracking-wider flex items-center gap-2">
+                    {/* @ts-ignore */}
                     {firstSession.country_flag && <img src={firstSession.country_flag} alt="flag" className="w-6 h-4 object-cover rounded-sm shadow-md" />}
                     {firstSession.circuit_short_name}
                   </span>
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white uppercase italic leading-none drop-shadow-xl">
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white f1-skew italic uppercase drop-shadow-xl mt-2 mb-4 max-w-4xl leading-tight">
+                  {/* @ts-ignore */}
                   {firstSession.meeting_official_name || firstSession.meeting_name}
                 </h1>
                 <p className="text-[var(--color-text-tertiary)] font-mono text-sm md:text-base mt-4 flex items-center gap-2">
@@ -134,39 +136,49 @@ function MeetingContent() {
                   <Link 
                     href={`/session?key=${session.session_key}`} 
                     key={session.session_key}
-                    className="bg-[#0a0a0a] border border-[#222] rounded-2xl p-6 flex flex-col justify-between group relative overflow-hidden hover:-translate-y-1 transition-all duration-300 shadow-xl hover:shadow-2xl hover:border-white/20"
+                    className="f1-card p-5 sm:p-6 flex flex-col justify-between group relative block"
                   >
-                    <div className="absolute left-0 top-0 bottom-0 w-1" style={{ background: `linear-gradient(to bottom, ${sessionColor}, transparent)` }} />
-                    <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-[50px] opacity-10 transition-opacity duration-500 group-hover:opacity-20 pointer-events-none" style={{ backgroundColor: sessionColor }} />
+                    {/* Top Right Corner Accent (F1 Style) */}
+                    <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 rounded-tr-xl transition-colors duration-300 pointer-events-none opacity-50 group-hover:opacity-100" style={{ borderColor: sessionColor }}></div>
                     
-                    <div className="relative z-10 flex justify-between items-start mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full shadow-lg" style={{ backgroundColor: sessionColor, boxShadow: `0 0 10px ${sessionColor}` }}></div>
-                        <h4 className="font-bold text-lg text-white uppercase tracking-widest">{session.session_name}</h4>
+                    {/* Background glow for race/qualifying */}
+                    {(isRace || isQualifying) && (
+                      <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] opacity-10 pointer-events-none" style={{ backgroundColor: sessionColor }} />
+                    )}
+                    
+                    <div className="relative z-10 flex justify-between items-start mb-4">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-1.5 h-4 rounded-sm" style={{ backgroundColor: sessionColor }}></div>
+                          <p className="text-xs uppercase tracking-widest text-[var(--color-text-secondary)] font-bold">{session.session_type}</p>
+                        </div>
+                        <h4 className="font-black text-2xl text-white uppercase tracking-tight">{session.session_name}</h4>
                       </div>
                       {isLive && (
-                        <div className="flex items-center gap-2 px-2 py-1 bg-red-500/10 rounded border border-red-500/20">
-                          <span className="text-[10px] uppercase font-bold tracking-widest text-red-500">Live</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[var(--color-f1-red)] rounded-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                          <span className="text-[10px] uppercase font-bold tracking-widest text-white">Live</span>
                         </div>
                       )}
                     </div>
                     
                     <div className="relative z-10 flex flex-col flex-1">
-                      <p className="text-sm font-mono text-[var(--color-text-tertiary)] flex items-center gap-2 mb-6">
-                        <Clock className="w-4 h-4 opacity-70" />
-                        {formatDateTime(session.date_start, "EEEE, dd MMM yyyy", session.gmt_offset)}
-                      </p>
+                      <div className="flex flex-col gap-1 mb-6 pt-4 border-t border-[#38383f]/50">
+                        <p className="text-sm text-[var(--color-text-secondary)] font-bold uppercase tracking-wider flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5" />
+                          {formatDateTime(session.date_start, "EEEE, dd MMM yyyy", session.gmt_offset)}
+                        </p>
+                      </div>
                       
-                      <div className="flex items-end justify-between mt-auto pt-4 border-t border-white/5 group-hover:border-white/10 transition-colors">
+                      <div className="flex items-end justify-between mt-auto">
                         <div>
-                          <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Local Time</p>
-                          <span className="text-3xl font-black font-mono text-white tracking-tighter">
+                          <p className="text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-widest mb-0.5">Local Time</p>
+                          <span className="text-4xl font-black text-white tracking-tighter leading-none">
                             {formatDateTime(session.date_start, "HH:mm", session.gmt_offset)}
                           </span>
                         </div>
-                        <div className="w-10 h-10 rounded-full bg-white/5 group-hover:bg-white text-white/50 group-hover:text-black flex items-center justify-center transition-all duration-300">
-                          <ArrowRight className="w-4 h-4 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
+                        <div className="flex items-center justify-center w-8 h-8 rounded bg-[#38383f] group-hover:bg-[var(--color-f1-red)] text-white transition-colors duration-300">
+                          <ArrowRight className="w-5 h-5" />
                         </div>
                       </div>
                     </div>

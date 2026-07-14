@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:ital,wght@0,300;0,400;0,600;0,700;0,900;1,400;1,700&display=swap');
 @import "tailwindcss";
 
 @theme inline {
@@ -10,15 +11,15 @@
   --color-border-strong: #333333;
   --color-border-hover: #444444;
 
-  --color-f1-red: #FF1801;
-  --color-f1-red-hover: #D01400;
+  --color-f1-red: #e10600;
+  --color-f1-red-hover: #cc0500;
 
   --color-text-primary: #ffffff;
   --color-text-secondary: #aaaaaa;
   --color-text-tertiary: #666666;
 
-  --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'Titillium Web', var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-mono: 'Titillium Web', var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 :root {
@@ -60,6 +61,14 @@ body {
 
   .f1-skew-reverse {
     @apply skew-x-[12deg];
+  }
+
+  /* F1 Official Card Style */
+  .f1-card {
+    @apply bg-[#15151e] border border-[#38383f] rounded-tr-xl overflow-hidden transition-all duration-300;
+  }
+  .f1-card:hover {
+    @apply border-white/50 shadow-xl;
   }
 }
 
