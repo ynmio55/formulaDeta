@@ -26,7 +26,7 @@ export function useSessions(meetingKey?: number | "latest") {
   });
 }
 
-export function useSessionDetails(sessionKey?: number | "latest") {
+export function useSessionDetails(sessionKey?: number) {
   return useQuery({
     queryKey: ["session_details", sessionKey],
     queryFn: () => fetchOpenF1("/v1/sessions", { session_key: sessionKey! }),

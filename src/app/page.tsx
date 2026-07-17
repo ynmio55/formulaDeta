@@ -1,6 +1,6 @@
 "use client";
 
-import { useLatestMeeting, useSessions, useSessionDetails, useSessionResult, usePitStops, useOvertakes, useWeather } from "@/hooks/openf1";
+import { useLatestMeeting, useSessions, useSessionResult, usePitStops, useOvertakes, useWeather } from "@/hooks/openf1";
 import { useTranslation } from "@/i18n/config";
 import { formatDateTime, getTimezoneLabel } from "@/lib/date-utils";
 import { Trophy, Clock, CloudRain, Thermometer, Car, RotateCcw, Activity, ArrowRight, PlayCircle, CheckCircle2, CircleDashed, Map, ChevronRight, Newspaper, Video } from "lucide-react";
@@ -100,12 +100,11 @@ export default function OverviewDashboard() {
   const [videos, setVideos] = useState<F1VideoItem[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(true);
 
-  const { data: latestSessionData, isLoading: loadingLatestSession } = useSessionDetails("latest");
-  const latestSession = latestSessionData?.[0];
-  const sessionKey = latestSession?.session_key;
-
-  const meetingKey = latestMeeting?.[0]?.meeting_key || latestSession?.meeting_key;
+  const meetingKey = latestMeeting?.[0]?.meeting_key;
   const { data: sessions, isLoading: loadingSessions } = useSessions(meetingKey);
+  
+  const latestSession = sessions ? sessions[sessions.length - 1] : null;
+  const sessionKey = latestSession?.session_key;
 
   const { data: sessionResult, isLoading: loadingResult } = useSessionResult(sessionKey);
   const { data: pitStops, isLoading: loadingPitStops } = usePitStops(sessionKey);
@@ -139,7 +138,7 @@ export default function OverviewDashboard() {
 
   if (!isReady) return null;
 
-  if (loadingMeeting || loadingSessions || loadingLatestSession) {
+  if (loadingMeeting || loadingSessions) {
     return (
       <div className="space-y-6 animate-pulse w-full max-w-[1920px] mx-auto">
         <div className="h-[280px] md:h-[320px] w-full bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-2xl"></div>
