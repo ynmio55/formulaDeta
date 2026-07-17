@@ -47,18 +47,27 @@ export async function GET(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
+    const headers: Record<string, string> = {
+      "Accept": "application/json",
+    };
+    
+    // Add API key if provided to bypass live session restrictions
+    if (process.env.OPENF1_API_KEY) {
+      headers["Authorization"] = `Bearer ${process.env.OPENF1_API_KEY}`;
+      headers["x-api-key"] = process.env.OPENF1_API_KEY;
+    }
+
     const res = await fetch(targetUrl, {
       signal: controller.signal,
-      headers: {
-        "Accept": "application/json",
-      },
+      headers,
     });
 
     clearTimeout(timeoutId);
 
     if (!res.ok) {
+      const errorText = await res.text().catch(() => "");
       return NextResponse.json(
-        { error: `Upstream error: ${res.statusText}` },
+        { error: `Upstream error: ${res.statusText}`, details: errorText },
         { status: res.status }
       );
     }

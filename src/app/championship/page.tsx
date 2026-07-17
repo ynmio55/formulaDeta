@@ -28,6 +28,29 @@ function useTeamsChampionship(year: number) {
   });
 }
 
+const DRIVER_FALLBACK: Record<number, { full_name: string, team_name: string, team_colour: string, headshot_url?: string }> = {
+  1: { full_name: "Max Verstappen", team_name: "Red Bull Racing", team_colour: "3671C6" },
+  11: { full_name: "Sergio Perez", team_name: "Red Bull Racing", team_colour: "3671C6" },
+  44: { full_name: "Lewis Hamilton", team_name: "Ferrari", team_colour: "E8002D" }, // Assuming 2025+
+  16: { full_name: "Charles Leclerc", team_name: "Ferrari", team_colour: "E8002D" },
+  4: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000" },
+  81: { full_name: "Oscar Piastri", team_name: "McLaren", team_colour: "FF8000" },
+  63: { full_name: "George Russell", team_name: "Mercedes", team_colour: "27F4D2" },
+  12: { full_name: "Andrea Kimi Antonelli", team_name: "Mercedes", team_colour: "27F4D2" }, // 2025
+  14: { full_name: "Fernando Alonso", team_name: "Aston Martin", team_colour: "229971" },
+  18: { full_name: "Lance Stroll", team_name: "Aston Martin", team_colour: "229971" },
+  10: { full_name: "Pierre Gasly", team_name: "Alpine", team_colour: "FF87BC" },
+  7: { full_name: "Jack Doohan", team_name: "Alpine", team_colour: "FF87BC" },
+  23: { full_name: "Alexander Albon", team_name: "Williams", team_colour: "64C4FF" },
+  55: { full_name: "Carlos Sainz", team_name: "Williams", team_colour: "64C4FF" },
+  22: { full_name: "Yuki Tsunoda", team_name: "Racing Bulls", team_colour: "6692FF" },
+  30: { full_name: "Liam Lawson", team_name: "Racing Bulls", team_colour: "6692FF" },
+  77: { full_name: "Valtteri Bottas", team_name: "Kick Sauber", team_colour: "52E252" }, // Adjust as needed
+  27: { full_name: "Nico Hulkenberg", team_name: "Kick Sauber", team_colour: "52E252" },
+  31: { full_name: "Esteban Ocon", team_name: "Haas F1 Team", team_colour: "B6BABD" },
+  87: { full_name: "Oliver Bearman", team_name: "Haas F1 Team", team_colour: "B6BABD" },
+};
+
 function ChampionshipContent() {
   const { year } = useAppStore();
   const [activeTab, setActiveTab] = useState<"drivers" | "teams">("drivers");
@@ -41,8 +64,13 @@ function ChampionshipContent() {
   const teamsStats = rawTeamsStats ? Array.from(new Map(rawTeamsStats.map((t: any) => [t.team_name, t])).values()).sort((a, b) => (b.points_current || 0) - (a.points_current || 0)) : [];
   
   const driversMap = new Map();
-  if (allDrivers) {
+  if (allDrivers && Array.isArray(allDrivers) && allDrivers.length > 0) {
     allDrivers.forEach((d: any) => driversMap.set(d.driver_number, d));
+  } else {
+    // Use fallback if API failed or returned empty
+    Object.entries(DRIVER_FALLBACK).forEach(([num, data]) => {
+      driversMap.set(parseInt(num), { driver_number: parseInt(num), ...data });
+    });
   }
 
   const getTeamCarUrl = (name: string) => {
