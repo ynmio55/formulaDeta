@@ -50,8 +50,8 @@ function TrackPositionContent() {
         // Downsample to keep it smooth but performant
         const downsampled = lapData.filter((_, i) => i % 10 === 0);
         setLocations(downsampled);
-      } catch (err: unknown) {
-        console.error("Failed to fetch driver positions:", err);
+      } catch (err: any) {
+        setError("Beta endpoint is currently unavailable or returned an error.");
       } finally {
         setLoading(false);
       }

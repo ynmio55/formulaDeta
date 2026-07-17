@@ -10,21 +10,22 @@ import { useRouter } from "next/navigation";
 function useDriversChampionship(year: number) {
   return useQuery({
     queryKey: ["championship_drivers", year],
-    queryFn: () => fetchOpenF1("/v1/championship_drivers", { meeting_key: "latest" }),
+    // Pass the actual year parameter so we fetch 2026 data from the API!
+    queryFn: () => fetchOpenF1("/v1/championship_drivers", { year: year }),
   });
 }
 
-function useAllDrivers() {
+function useAllDrivers(year: number) {
   return useQuery({
-    queryKey: ["all_drivers", "latest"],
-    queryFn: () => fetchOpenF1("/v1/drivers", { session_key: "latest" }),
+    queryKey: ["all_drivers", year],
+    queryFn: () => fetchOpenF1("/v1/drivers", { year: year }),
   });
 }
 
 function useTeamsChampionship(year: number) {
   return useQuery({
     queryKey: ["championship_teams", year],
-    queryFn: () => fetchOpenF1("/v1/championship_teams", { meeting_key: "latest" }),
+    queryFn: () => fetchOpenF1("/v1/championship_teams", { year: year }),
   });
 }
 
@@ -58,18 +59,18 @@ function ChampionshipContent() {
   
   const { data: rawDriversStats, isLoading: loadingDrivers, isError: errDrivers } = useDriversChampionship(year);
   const { data: rawTeamsStats, isLoading: loadingTeams, isError: errTeams } = useTeamsChampionship(year);
-  const { data: allDrivers } = useAllDrivers();
+  const { data: allDrivers } = useAllDrivers(year);
 
   const driversStats = rawDriversStats ? Array.from(new Map(rawDriversStats.map((d: any) => [d.driver_number, d])).values()).sort((a, b) => (b.points_current || 0) - (a.points_current || 0)) : [];
   const teamsStats = rawTeamsStats ? Array.from(new Map(rawTeamsStats.map((t: any) => [t.team_name, t])).values()).sort((a, b) => (b.points_current || 0) - (a.points_current || 0)) : [];
-  
+
   const driversMap = new Map();
   if (allDrivers && Array.isArray(allDrivers) && allDrivers.length > 0) {
     allDrivers.forEach((d: any) => driversMap.set(d.driver_number, d));
   } else {
     // Use fallback if API failed or returned empty
     Object.entries(DRIVER_FALLBACK).forEach(([num, data]) => {
-      driversMap.set(parseInt(num), { driver_number: parseInt(num), ...data });
+      driversMap.set(Number(num), { driver_number: Number(num), ...data });
     });
   }
 
