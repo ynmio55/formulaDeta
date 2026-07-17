@@ -29,15 +29,15 @@ function useTeamsChampionship(year: number) {
 }
 
 const DRIVER_FALLBACK: Record<number, { full_name: string, team_name: string, team_colour: string, headshot_url?: string }> = {
-  1: { full_name: "Max Verstappen", team_name: "Red Bull Racing", team_colour: "3671C6" },
-  11: { full_name: "Sergio Perez", team_name: "Red Bull Racing", team_colour: "3671C6" },
-  44: { full_name: "Lewis Hamilton", team_name: "Ferrari", team_colour: "E8002D" }, // Assuming 2025+
-  16: { full_name: "Charles Leclerc", team_name: "Ferrari", team_colour: "E8002D" },
-  4: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000" },
-  81: { full_name: "Oscar Piastri", team_name: "McLaren", team_colour: "FF8000" },
-  63: { full_name: "George Russell", team_name: "Mercedes", team_colour: "27F4D2" },
-  12: { full_name: "Andrea Kimi Antonelli", team_name: "Mercedes", team_colour: "27F4D2" }, // 2025
-  14: { full_name: "Fernando Alonso", team_name: "Aston Martin", team_colour: "229971" },
+  1: { full_name: "Max Verstappen", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png.transform/1col/image.png" },
+  11: { full_name: "Sergio Perez", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png.transform/1col/image.png" },
+  44: { full_name: "Lewis Hamilton", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png.transform/1col/image.png" },
+  16: { full_name: "Charles Leclerc", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png.transform/1col/image.png" },
+  4: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png.transform/1col/image.png" },
+  81: { full_name: "Oscar Piastri", team_name: "McLaren", team_colour: "FF8000", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png.transform/1col/image.png" },
+  63: { full_name: "George Russell", team_name: "Mercedes", team_colour: "27F4D2", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png.transform/1col/image.png" },
+  12: { full_name: "Andrea Kimi Antonelli", team_name: "Mercedes", team_colour: "27F4D2" },
+  14: { full_name: "Fernando Alonso", team_name: "Aston Martin", team_colour: "229971", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png.transform/1col/image.png" },
   18: { full_name: "Lance Stroll", team_name: "Aston Martin", team_colour: "229971" },
   10: { full_name: "Pierre Gasly", team_name: "Alpine", team_colour: "FF87BC" },
   7: { full_name: "Jack Doohan", team_name: "Alpine", team_colour: "FF87BC" },
