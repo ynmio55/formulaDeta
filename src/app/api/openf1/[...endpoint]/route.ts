@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getJolpiFallback } from "@/lib/jolpi-fallback";
 
 // We require the endpoint to be exactly one of the allowed 18 endpoints
 const ALLOWED_ENDPOINTS = new Set([
@@ -65,6 +66,12 @@ export async function GET(
     clearTimeout(timeoutId);
 
     if (!res.ok) {
+      // If API returns an error (404 Not Found for beta endpoints, 401/403 blocked, etc.), try Jolpi fallback
+      const fallbackData = await getJolpiFallback(endpointName, searchParams);
+      if (fallbackData) {
+        return NextResponse.json(fallbackData);
+      }
+
       const errorText = await res.text().catch(() => "");
       return NextResponse.json(
         { error: `Upstream error: ${res.statusText}`, details: errorText },

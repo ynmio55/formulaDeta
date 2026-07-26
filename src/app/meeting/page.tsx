@@ -77,13 +77,13 @@ function MeetingContent() {
                     <span className="f1-skew-reverse">ROUND {firstSession.meeting_key}</span>
                   </span>
                   <span className="text-white/80 text-xs md:text-sm font-mono tracking-wider flex items-center gap-2">
-                    {/* @ts-ignore */}
+                    {/* @ts-expect-error */}
                     {firstSession.country_flag && <img src={firstSession.country_flag} alt="flag" className="w-6 h-4 object-cover rounded-sm shadow-md" />}
                     {firstSession.circuit_short_name}
                   </span>
                 </div>
                 <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white f1-skew italic uppercase drop-shadow-xl mt-2 mb-4 max-w-4xl leading-tight">
-                  {/* @ts-ignore */}
+                  {/* @ts-expect-error */}
                   {firstSession.meeting_official_name || firstSession.meeting_name}
                 </h1>
                 <p className="text-[var(--color-text-tertiary)] font-mono text-sm md:text-base mt-4 flex items-center gap-2">

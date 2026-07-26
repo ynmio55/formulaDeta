@@ -30,26 +30,31 @@ function useTeamsChampionship(year: number) {
 }
 
 const DRIVER_FALLBACK: Record<number, { full_name: string, team_name: string, team_colour: string, headshot_url?: string }> = {
-  1: { full_name: "Max Verstappen", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/M/MAXVER01_Max_Verstappen/maxver01.png.transform/1col/image.png" },
-  11: { full_name: "Sergio Perez", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/S/SERPER01_Sergio_Perez/serper01.png.transform/1col/image.png" },
-  44: { full_name: "Lewis Hamilton", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LEWHAM01_Lewis_Hamilton/lewham01.png.transform/1col/image.png" },
-  16: { full_name: "Charles Leclerc", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/C/CHALEC01_Charles_Leclerc/chalec01.png.transform/1col/image.png" },
-  4: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/L/LANNOR01_Lando_Norris/lannor01.png.transform/1col/image.png" },
-  81: { full_name: "Oscar Piastri", team_name: "McLaren", team_colour: "FF8000", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/O/OSCPIA01_Oscar_Piastri/oscpia01.png.transform/1col/image.png" },
-  63: { full_name: "George Russell", team_name: "Mercedes", team_colour: "27F4D2", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/G/GEORUS01_George_Russell/georus01.png.transform/1col/image.png" },
-  12: { full_name: "Andrea Kimi Antonelli", team_name: "Mercedes", team_colour: "27F4D2" },
-  14: { full_name: "Fernando Alonso", team_name: "Aston Martin", team_colour: "229971", headshot_url: "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers/F/FERALO01_Fernando_Alonso/feralo01.png.transform/1col/image.png" },
-  18: { full_name: "Lance Stroll", team_name: "Aston Martin", team_colour: "229971" },
-  10: { full_name: "Pierre Gasly", team_name: "Alpine", team_colour: "FF87BC" },
-  7: { full_name: "Jack Doohan", team_name: "Alpine", team_colour: "FF87BC" },
-  23: { full_name: "Alexander Albon", team_name: "Williams", team_colour: "64C4FF" },
-  55: { full_name: "Carlos Sainz", team_name: "Williams", team_colour: "64C4FF" },
-  22: { full_name: "Yuki Tsunoda", team_name: "Racing Bulls", team_colour: "6692FF" },
-  30: { full_name: "Liam Lawson", team_name: "Racing Bulls", team_colour: "6692FF" },
-  77: { full_name: "Valtteri Bottas", team_name: "Kick Sauber", team_colour: "52E252" }, // Adjust as needed
-  27: { full_name: "Nico Hulkenberg", team_name: "Kick Sauber", team_colour: "52E252" },
-  31: { full_name: "Esteban Ocon", team_name: "Haas F1 Team", team_colour: "B6BABD" },
-  87: { full_name: "Oliver Bearman", team_name: "Haas F1 Team", team_colour: "B6BABD" },
+  3: { full_name: "Max Verstappen", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "/drivers/2026redbullracingmaxver01right.avif" },
+  1: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000", headshot_url: "/drivers/2026mclarenlannor01right.avif" },
+  4: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000", headshot_url: "/drivers/2026mclarenlannor01right.avif" },
+  11: { full_name: "Sergio Perez", team_name: "Cadillac", team_colour: "FFB800", headshot_url: "/drivers/2026cadillacserper01right.avif" },
+  6: { full_name: "Isack Hadjar", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "/drivers/2026redbullracingisahad01right.avif" },
+  44: { full_name: "Lewis Hamilton", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "/drivers/2026ferrarilewham01right.avif" },
+  16: { full_name: "Charles Leclerc", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "/drivers/2026ferrarichalec01right.avif" },
+  81: { full_name: "Oscar Piastri", team_name: "McLaren", team_colour: "FF8000", headshot_url: "/drivers/2026mclarenoscpia01right.avif" },
+  63: { full_name: "George Russell", team_name: "Mercedes", team_colour: "27F4D2", headshot_url: "/drivers/2026mercedesgeorus01right.avif" },
+  12: { full_name: "Andrea Kimi Antonelli", team_name: "Mercedes", team_colour: "27F4D2", headshot_url: "/drivers/2026mercedesandant01right.avif" },
+  14: { full_name: "Fernando Alonso", team_name: "Aston Martin", team_colour: "229971", headshot_url: "/drivers/2026astonmartinferalo01right.avif" },
+  18: { full_name: "Lance Stroll", team_name: "Aston Martin", team_colour: "229971", headshot_url: "/drivers/2026astonmartinlanstr01right.avif" },
+  10: { full_name: "Pierre Gasly", team_name: "Alpine", team_colour: "FF87BC", headshot_url: "/drivers/2026alpinepiegas01right.avif" },
+  7: { full_name: "Jack Doohan", team_name: "Alpine", team_colour: "FF87BC", headshot_url: "/drivers/2026alpinefracol01right.avif" },
+  23: { full_name: "Alexander Albon", team_name: "Williams", team_colour: "64C4FF", headshot_url: "/drivers/2026williamsalealb01right.avif" },
+  55: { full_name: "Carlos Sainz", team_name: "Williams", team_colour: "64C4FF", headshot_url: "/drivers/2026williamscarsai01right.avif" },
+  22: { full_name: "Yuki Tsunoda", team_name: "Racing Bulls", team_colour: "6692FF", headshot_url: "/drivers/2026racingbullslialaw01right.avif" },
+  30: { full_name: "Liam Lawson", team_name: "Racing Bulls", team_colour: "6692FF", headshot_url: "/drivers/2026racingbullslialaw01right.avif" },
+  77: { full_name: "Valtteri Bottas", team_name: "Cadillac", team_colour: "FFB800", headshot_url: "/drivers/2026cadillacvalbot01right.avif" }, // Adjust as needed
+  27: { full_name: "Nico Hulkenberg", team_name: "Audi", team_colour: "F40000", headshot_url: "/drivers/2026audinichul01right.avif" },
+  31: { full_name: "Esteban Ocon", team_name: "Haas F1 Team", team_colour: "B6BABD", headshot_url: "/drivers/2026haasf1teamestoco01right.avif" },
+  87: { full_name: "Oliver Bearman", team_name: "Haas F1 Team", team_colour: "B6BABD", headshot_url: "/drivers/2026haasf1teamolibea01right.avif" },
+  5: { full_name: "Gabriel Bortoleto", team_name: "Audi", team_colour: "F40000", headshot_url: "/drivers/2026audigabbor01right.avif" },
+  43: { full_name: "Franco Colapinto", team_name: "Alpine", team_colour: "FF87BC", headshot_url: "/drivers/2026alpinefracol01right.avif" },
+  41: { full_name: "Arvid Lindblad", team_name: "Racing Bulls", team_colour: "6692FF", headshot_url: "/drivers/2026racingbullsarvlin01right.avif" }
 };
 
 function ChampionshipContent() {
@@ -179,11 +184,11 @@ function ChampionshipContent() {
                           </div>
 
                           {photoUrl && (
-                            <img 
-                              src={photoUrl} 
-                              alt={displayName} 
-                              className={`absolute bottom-0 right-[-10%] md:right-[-5%] object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] transition-transform duration-500 group-hover:scale-105 ${isFirst ? 'h-[85%] md:h-[95%]' : 'h-[75%] md:h-[90%]'}`}
-                            />
+                              <img 
+                                src={photoUrl} 
+                                alt={displayName} 
+                                className={`absolute bottom-[-20%] right-[-10%] md:right-[-5%] object-cover object-top drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] transition-transform duration-500 group-hover:scale-105 ${isFirst ? 'h-[140%] md:h-[130%] w-[120%]' : 'h-[130%] md:h-[120%] w-[120%]'}`}
+                              />
                           )}
                         </div>
                       );
@@ -217,7 +222,7 @@ function ChampionshipContent() {
                               <td className="px-6 py-4 font-bold text-gray-400">{driver.position_current}</td>
                               <td className="px-6 py-4 font-medium group flex items-center gap-4">
                                 {photoUrl ? (
-                                  <img src={photoUrl} alt={displayName} className="w-10 h-10 object-cover rounded-full bg-white/5 border border-white/10" />
+                                  <img src={photoUrl} alt={displayName} className="w-10 h-10 object-cover object-top rounded-full bg-white/5 border border-white/10" />
                                 ) : (
                                   <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
                                     <Users className="w-5 h-5 text-gray-500" />
@@ -331,7 +336,7 @@ function ChampionshipContent() {
                           <div className="mt-3 flex items-center gap-4">
                             {driversInTeam.map(d => (
                               <div key={d.driver_number} className="flex items-center gap-2">
-                                {d.headshot_url && <img src={d.headshot_url.replace('1col', '2col')} className="w-6 h-6 rounded-full object-cover bg-white/10" />}
+                                {d.headshot_url && <img src={d.headshot_url.replace('1col', '2col')} className="w-6 h-6 rounded-full object-cover object-top bg-white/10" />}
                                 <div className="text-xs text-gray-200">
                                   <span className="opacity-70">{d.first_name}</span> <span className="font-bold uppercase">{d.last_name}</span>
                                 </div>
