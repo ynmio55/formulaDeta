@@ -117,7 +117,7 @@ function ChampionshipContent() {
     <div className="space-y-6 pb-24">
       <header className="flex flex-col gap-2 border-b border-[var(--color-border-subtle)] pb-6">
         <h1 className="text-3xl font-bold tracking-tight">Championship Standings</h1>
-        <p className="text-gray-400">Current season standings. (Note: These endpoints are currently in beta).</p>
+        <p className="text-gray-400">Current season standings.</p>
       </header>
 
       <div className="flex gap-2 border-b border-[var(--color-border-subtle)] pb-4">

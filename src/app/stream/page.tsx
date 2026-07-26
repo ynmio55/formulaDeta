@@ -55,7 +55,8 @@ function StreamContent() {
 
   const countryName = session ? (session.country_name || session.circuit_short_name || 'Grand Prix') : 'Live';
   const sessionName = session ? session.session_name : 'Motorsports';
-  const streamUrl = session ? `https://ppv.st/live/f1/${session.year}/${formatCountry(countryName)}/${formatSession(sessionName)}` : 'https://ppv.st/#35';
+  const originalUrl = session ? `https://ppv.st/live/f1/${session.year}/${formatCountry(countryName)}/${formatSession(sessionName)}` : 'https://ppv.st/#35';
+  const streamUrl = `/api/stream-proxy?url=${encodeURIComponent(originalUrl)}`;
 
   return (
     <div className="h-screen w-screen bg-black flex flex-col overflow-hidden">
@@ -99,7 +100,7 @@ function StreamContent() {
             <RefreshCw className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Reload</span>
           </button>
           <a 
-            href={streamUrl} 
+            href={originalUrl} 
             target="_blank" 
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-f1-red)] hover:bg-[var(--color-f1-red-hover)] text-white rounded-md text-xs font-bold uppercase tracking-widest transition-colors"
