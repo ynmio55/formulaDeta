@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -15,9 +16,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "FormulaDeta",
   description: "F1 Data and Telemetry Platform",
+  verification: {
+    google: "wRwGwt4Cmi-4UpGY2YHnDKE4VkY0j-RiyPfsZr6gbl0",
+  },
 };
 
 export default function RootLayout({
@@ -27,9 +31,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <meta name="google-site-verification" content="wRwGwt4Cmi-4UpGY2YHnDKE4VkY0j-RiyPfsZr6gbl0" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--color-bg-base)] text-[var(--color-text-primary)] min-h-screen flex flex-col md:flex-row`}
       >
