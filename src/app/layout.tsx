@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FormulaDeta",
+  title: "Formula Data",
   description: "F1 Data and Telemetry Platform",
   verification: {
     google: "wRwGwt4Cmi-4UpGY2YHnDKE4VkY0j-RiyPfsZr6gbl0",
