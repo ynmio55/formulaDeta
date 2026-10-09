@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { fetchOpenF1 } from "@/lib/openf1/client";
 import { CarData } from "@/lib/openf1/types";
 import { estimateDelta } from "@/lib/openf1/delta-time";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactECharts from "echarts-for-react";
 import { Search, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -35,6 +35,7 @@ function CompareContent() {
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [telemetryData, setTelemetryData] = useState<Record<number, CarData[]>>({});
   const [isLoadingTelemetry, setIsLoadingTelemetry] = useState(false);
+  const chartRefs = useRef<Record<string, ReactECharts | null>>({});
 
   // Toggle driver selection
   const toggleDriver = (driverNumber: number) => {
@@ -194,6 +195,25 @@ function CompareContent() {
         .sort((a,b) => (a.lap_duration || Infinity) - (b.lap_duration || Infinity))[0]
     : (availableLaps || []).find(l => l.lap_number === selectedLap);
 
+  const exportChart = (chart: string) => {
+    const instance = chartRefs.current[chart]?.getEchartsInstance();
+    if (!instance) return;
+    const link = document.createElement("a");
+    link.href = instance.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: "#0a0a0a" });
+    link.download = "formula-data-" + chart + ".png";
+    link.click();
+  };
+
+  const connectChart = (name: string, instance: ReactECharts | null) => {
+    chartRefs.current[name] = instance;
+    if (instance) {
+      const chartInstance = instance.getEchartsInstance();
+      chartInstance.group = "formula-compare";
+      // Idempotent connection across chart mounts.
+      import("echarts").then(echarts => echarts.connect("formula-compare"));
+    }
+  };
+
   const shareSelection = async () => {
     const url = new URL(window.location.href);
     url.searchParams.set("key", String(activeSessionKey));
@@ -333,12 +353,14 @@ function CompareContent() {
               )}
               <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-4">
                 <h3 className="font-medium ml-2 mb-2">Speed Trace</h3>
-                <ReactECharts option={speedChartOption} style={{ height: 350, width: '100%' }} opts={{ renderer: 'canvas' }} />
+                <button type="button" className="mb-2 rounded border border-gray-600 px-2 py-1 text-xs" onClick={() => exportChart("speed")}>Export PNG</button>
+                <ReactECharts ref={instance => connectChart("speed", instance)} option={speedChartOption} style={{ height: 350, width: '100%' }} opts={{ renderer: 'canvas' }} />
               </div>
               
               <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-4">
                 <h3 className="font-medium ml-2 mb-2">Throttle Trace</h3>
-                <ReactECharts option={throttleChartOption} style={{ height: 350, width: '100%' }} opts={{ renderer: 'canvas' }} />
+                <button type="button" className="mb-2 rounded border border-gray-600 px-2 py-1 text-xs" onClick={() => exportChart("throttle")}>Export PNG</button>
+                <ReactECharts ref={instance => connectChart("throttle", instance)} option={throttleChartOption} style={{ height: 350, width: '100%' }} opts={{ renderer: 'canvas' }} />
               </div>
             </>
           )}
