@@ -2,6 +2,7 @@
 
 import { useLatestMeeting, useSessions, useSessionResult, usePitStops, useOvertakes, useWeather } from "@/hooks/openf1";
 import { useTranslation } from "@/i18n/config";
+import SeasonScheduleFallback from "@/components/season/SeasonScheduleFallback";
 import { formatDateTime, getTimezoneLabel } from "@/lib/date-utils";
 import { Trophy, Clock, CloudRain, Thermometer, Car, RotateCcw, Activity, ArrowRight, PlayCircle, CheckCircle2, CircleDashed, Map, ChevronRight, Newspaper, Video } from "lucide-react";
 import Link from "next/link";
@@ -93,7 +94,7 @@ function RaceWeekendTimeline({ sessions, gmtOffset, currentTime }: { sessions: a
 }
 
 export default function OverviewDashboard() {
-  const { data: latestMeeting, isLoading: loadingMeeting, isError: meetingError, error: meetingErrorDetail, refetch: retryMeeting, dataUpdatedAt: meetingUpdatedAt } = useLatestMeeting();
+  const { data: latestMeeting, isLoading: loadingMeeting, isError: meetingError, refetch: retryMeeting, dataUpdatedAt: meetingUpdatedAt } = useLatestMeeting();
   const { t, isReady } = useTranslation();
   const { setYear } = useAppStore();
   const router = useRouter();
@@ -155,15 +156,17 @@ export default function OverviewDashboard() {
     );
   }
 
-  if (meetingError) {
-    return <div role="alert" className="mx-auto mt-8 max-w-3xl rounded-xl border border-red-900 bg-red-950/30 p-8 text-center">
-      <h1 className="mb-3 text-xl font-bold text-red-300">Unable to load Formula 1 calendar</h1>
-      <p className="mb-5 text-sm text-gray-300">{meetingErrorDetail instanceof Error ? meetingErrorDetail.message : "The timing provider is currently unavailable."}</p>
-      <button type="button" onClick={() => void retryMeeting()} className="rounded-md bg-red-700 px-5 py-2 text-white hover:bg-red-600">Retry</button>
-    </div>;
+  if (meetingError || !meeting) {
+    return (
+      <div className="mx-auto mt-8 max-w-6xl">
+        <SeasonScheduleFallback
+          year={new Date().getUTCFullYear()}
+          compact
+          retryOriginal={() => void retryMeeting()}
+        />
+      </div>
+    );
   }
-
-  if (!meeting) return <div className="text-[var(--color-text-secondary)] p-8 text-center bg-[var(--color-surface-1)] rounded-xl border border-[var(--color-border-subtle)] m-4">{t("state.noData")}</div>;
 
   return (
     <div className="space-y-6 w-full max-w-[1920px] mx-auto animate-in fade-in duration-700">
