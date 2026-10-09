@@ -32,11 +32,11 @@ const navGroups = [
     items: [
       { key: "nav.overview", href: "/", icon: LayoutDashboard },
       { key: "nav.season", href: "/season", icon: Calendar },
-      { key: "nav.recent", href: "/recent", icon: History, label: "Recent sessions" },
+      { key: "nav.recent", href: "/recent", icon: History },
       { key: "nav.championship", href: "/championship", icon: Trophy },
       { key: "nav.live", href: "/stream", icon: Tv },
-      { key: "news", href: "/news", icon: Newspaper, label: "F1 News" },
-      { key: "video", href: "/video", icon: Video, label: "F1 Video" },
+      { key: "nav.news", href: "/news", icon: Newspaper },
+      { key: "nav.video", href: "/video", icon: Video },
     ]
   }
 ];
@@ -44,7 +44,7 @@ const navGroups = [
 export default function Navigation() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { t, isReady } = useTranslation();
+  const { t, locale, isReady } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -81,7 +81,7 @@ export default function Navigation() {
           <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 custom-scrollbar">
             <div className="flex flex-col gap-8">
               {navGroups.map((group) => (
-                <div key={group.title} className="px-3">
+                <div key={locale === "th" ? "เมนูหลัก" : group.title} className="px-3">
                   <div
                     className={clsx(
                       "mb-3 text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-tertiary)] transition-opacity duration-300 whitespace-nowrap",
