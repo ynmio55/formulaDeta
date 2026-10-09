@@ -1,3 +1,4 @@
+import { checkApiRateLimit } from "@/lib/api-rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { getJolpiFallback } from "@/lib/jolpi-fallback";
 import { validateOpenF1Query, cacheControlFor } from "@/lib/openf1/proxy-policy";
@@ -29,6 +30,12 @@ export async function GET(
   { params }: { params: Promise<{ endpoint: string[] }> }
 ) {
   try {
+    const rate = await checkApiRateLimit(request);
+    if (rate && !rate.allowed) {
+      return NextResponse.json({ error: "Too many requests" }, {
+        status: 429, headers: { "Retry-After": String(rate.retryAfter), "Cache-Control": "no-store" },
+      });
+    }
     const { endpoint } = await params;
     const endpointName = endpoint[0];
 
