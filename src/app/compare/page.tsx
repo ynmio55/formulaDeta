@@ -155,6 +155,33 @@ function CompareContent() {
     series: throttleSeries
   };
 
+
+  const makeSeries = (field: "brake" | "n_gear") => selectedDrivers.map(dNumber => {
+    const driver = drivers?.find(d => d.driver_number === dNumber);
+    return {
+      name: driver?.name_acronym || String(dNumber),
+      type: "line",
+      step: field === "n_gear" ? "end" : undefined,
+      showSymbol: false,
+      data: (telemetryData[dNumber] || []).map(d => [d.date, Number(d[field])]),
+      lineStyle: { color: driver?.team_colour ? "#" + driver.team_colour : undefined }
+    };
+  });
+
+  const exportCsv = () => {
+    const rows = ["driver,date,speed,throttle,brake,gear"];
+    selectedDrivers.forEach(number => {
+      (telemetryData[number] || []).forEach(d => rows.push(
+        [number, d.date, d.speed, d.throttle, Number(d.brake), d.n_gear].join(",")
+      ));
+    });
+    const url = URL.createObjectURL(new Blob([rows.join("\n")], {type: "text/csv"}));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "formula-telemetry.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
   return (
     <div className="space-y-6">
       <div className="flex gap-6 flex-col lg:flex-row">
@@ -207,6 +234,15 @@ function CompareContent() {
                 </div>
               )}
               
+              <button type="button" onClick={exportCsv} className="rounded border border-gray-600 p-2 text-sm">Export CSV</button>
+              {(["brake", "n_gear"] as const).map(field => (
+                <div key={field} className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-4">
+                  <h3 className="font-medium ml-2 mb-2">{field === "brake" ? "Brake" : "Gear"} Trace</h3>
+                  <ReactECharts option={{...speedChartOption, series: makeSeries(field),
+                    yAxis: { type: "value", name: field === "brake" ? "Brake" : "Gear" },
+                  }} style={{height: 300, width: "100%"}} opts={{renderer: "canvas"}} />
+                </div>
+              ))}
               <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-4">
                 <h3 className="font-medium ml-2 mb-2">Speed Trace</h3>
                 <ReactECharts option={speedChartOption} style={{ height: 350, width: '100%' }} opts={{ renderer: 'canvas' }} />
