@@ -43,8 +43,11 @@ function RaceWeekendTimeline({ sessions, currentSessionKey, gmtOffset }: { sessi
       <div className="absolute left-[15px] top-4 bottom-4 w-px bg-[var(--color-border-subtle)]"></div>
       
       {sessions.map((session) => {
-        const isCurrent = session.session_key === currentSessionKey;
-        const isCompleted = currentSessionKey ? session.session_key < currentSessionKey : false;
+        const start = Date.parse(session.date_start);
+        const end = session.date_end ? Date.parse(session.date_end) : NaN;
+        const currentTime = Date.now();
+        const isCurrent = Number.isFinite(start) && Number.isFinite(end) && currentTime >= start && currentTime <= end;
+        const isCompleted = Number.isFinite(end) && currentTime > end;
         
         return (
           <Link 
