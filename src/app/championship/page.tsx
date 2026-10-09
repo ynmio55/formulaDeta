@@ -29,34 +29,6 @@ function useTeamsChampionship(year: number) {
   });
 }
 
-const DRIVER_FALLBACK: Record<number, { full_name: string, team_name: string, team_colour: string, headshot_url?: string }> = {
-  3: { full_name: "Max Verstappen", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "/drivers/2026redbullracingmaxver01right.avif" },
-  1: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000", headshot_url: "/drivers/2026mclarenlannor01right.avif" },
-  4: { full_name: "Lando Norris", team_name: "McLaren", team_colour: "FF8000", headshot_url: "/drivers/2026mclarenlannor01right.avif" },
-  11: { full_name: "Sergio Perez", team_name: "Cadillac", team_colour: "FFB800", headshot_url: "/drivers/2026cadillacserper01right.avif" },
-  6: { full_name: "Isack Hadjar", team_name: "Red Bull Racing", team_colour: "3671C6", headshot_url: "/drivers/2026redbullracingisahad01right.avif" },
-  44: { full_name: "Lewis Hamilton", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "/drivers/2026ferrarilewham01right.avif" },
-  16: { full_name: "Charles Leclerc", team_name: "Ferrari", team_colour: "E8002D", headshot_url: "/drivers/2026ferrarichalec01right.avif" },
-  81: { full_name: "Oscar Piastri", team_name: "McLaren", team_colour: "FF8000", headshot_url: "/drivers/2026mclarenoscpia01right.avif" },
-  63: { full_name: "George Russell", team_name: "Mercedes", team_colour: "27F4D2", headshot_url: "/drivers/2026mercedesgeorus01right.avif" },
-  12: { full_name: "Andrea Kimi Antonelli", team_name: "Mercedes", team_colour: "27F4D2", headshot_url: "/drivers/2026mercedesandant01right.avif" },
-  14: { full_name: "Fernando Alonso", team_name: "Aston Martin", team_colour: "229971", headshot_url: "/drivers/2026astonmartinferalo01right.avif" },
-  18: { full_name: "Lance Stroll", team_name: "Aston Martin", team_colour: "229971", headshot_url: "/drivers/2026astonmartinlanstr01right.avif" },
-  10: { full_name: "Pierre Gasly", team_name: "Alpine", team_colour: "FF87BC", headshot_url: "/drivers/2026alpinepiegas01right.avif" },
-  7: { full_name: "Jack Doohan", team_name: "Alpine", team_colour: "FF87BC", headshot_url: "/drivers/2026alpinefracol01right.avif" },
-  23: { full_name: "Alexander Albon", team_name: "Williams", team_colour: "64C4FF", headshot_url: "/drivers/2026williamsalealb01right.avif" },
-  55: { full_name: "Carlos Sainz", team_name: "Williams", team_colour: "64C4FF", headshot_url: "/drivers/2026williamscarsai01right.avif" },
-  22: { full_name: "Yuki Tsunoda", team_name: "Racing Bulls", team_colour: "6692FF", headshot_url: "/drivers/2026racingbullslialaw01right.avif" },
-  30: { full_name: "Liam Lawson", team_name: "Racing Bulls", team_colour: "6692FF", headshot_url: "/drivers/2026racingbullslialaw01right.avif" },
-  77: { full_name: "Valtteri Bottas", team_name: "Cadillac", team_colour: "FFB800", headshot_url: "/drivers/2026cadillacvalbot01right.avif" }, // Adjust as needed
-  27: { full_name: "Nico Hulkenberg", team_name: "Audi", team_colour: "F40000", headshot_url: "/drivers/2026audinichul01right.avif" },
-  31: { full_name: "Esteban Ocon", team_name: "Haas F1 Team", team_colour: "B6BABD", headshot_url: "/drivers/2026haasf1teamestoco01right.avif" },
-  87: { full_name: "Oliver Bearman", team_name: "Haas F1 Team", team_colour: "B6BABD", headshot_url: "/drivers/2026haasf1teamolibea01right.avif" },
-  5: { full_name: "Gabriel Bortoleto", team_name: "Audi", team_colour: "F40000", headshot_url: "/drivers/2026audigabbor01right.avif" },
-  43: { full_name: "Franco Colapinto", team_name: "Alpine", team_colour: "FF87BC", headshot_url: "/drivers/2026alpinefracol01right.avif" },
-  41: { full_name: "Arvid Lindblad", team_name: "Racing Bulls", team_colour: "6692FF", headshot_url: "/drivers/2026racingbullsarvlin01right.avif" }
-};
-
 function ChampionshipContent() {
   const { year } = useAppStore();
   const [activeTab, setActiveTab] = useState<"drivers" | "teams">("drivers");
@@ -72,11 +44,6 @@ function ChampionshipContent() {
   const driversMap = new Map();
   if (allDrivers && Array.isArray(allDrivers) && allDrivers.length > 0) {
     allDrivers.forEach((d: any) => driversMap.set(d.driver_number, d));
-  } else {
-    // Use fallback if API failed or returned empty
-    Object.entries(DRIVER_FALLBACK).forEach(([num, data]) => {
-      driversMap.set(Number(num), { driver_number: Number(num), ...data });
-    });
   }
 
   const getTeamCarUrl = (name: string) => {
@@ -117,7 +84,7 @@ function ChampionshipContent() {
     <div className="space-y-6 pb-24">
       <header className="flex flex-col gap-2 border-b border-[var(--color-border-subtle)] pb-6">
         <h1 className="text-3xl font-bold tracking-tight">Championship Standings</h1>
-        <p className="text-gray-400">Current season standings.</p>
+        <p className="text-gray-400">Season {year} standings from available timing data.</p>
       </header>
 
       <div className="flex gap-2 border-b border-[var(--color-border-subtle)] pb-4">
