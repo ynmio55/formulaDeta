@@ -140,7 +140,7 @@ export const SessionSchema = z.object({
 });
 
 export const SessionResultSchema = z.object({
-  position: z.number(),
+  position: z.number().nullable(),
   driver_number: z.number(),
   number_of_laps: z.number(),
   dnf: z.boolean().nullable(),
