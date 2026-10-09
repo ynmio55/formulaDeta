@@ -21,7 +21,8 @@ import {
   Search,
   Newspaper,
   Video,
-  Tv
+  Tv,
+  History
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -31,6 +32,7 @@ const navGroups = [
     items: [
       { key: "nav.overview", href: "/", icon: LayoutDashboard },
       { key: "nav.season", href: "/season", icon: Calendar },
+      { key: "nav.recent", href: "/recent", icon: History, label: "Recent sessions" },
       { key: "nav.championship", href: "/championship", icon: Trophy },
       { key: "nav.live", href: "/stream", icon: Tv },
       { key: "news", href: "/news", icon: Newspaper, label: "F1 News" },
@@ -158,6 +160,7 @@ export default function Navigation() {
               {href:"/radio",label:"Team radio"},
               {href:"/api-explorer",label:"API explorer"},
               {href:"/search",label:"Search"},
+              {href:"/recent",label:"Recent sessions"},
             ].map(item => (
               <Link key={item.href} href={item.href + keySuffix} onClick={() => setMoreOpen(false)}
                 className="rounded-lg bg-[var(--color-surface-2)] px-3 py-3 text-sm hover:text-white">
