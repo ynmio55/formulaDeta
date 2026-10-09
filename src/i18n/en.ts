@@ -2,6 +2,9 @@ export const en = {
   // Navigation
   "nav.overview": "Overview",
   "nav.season": "Season",
+  "nav.recent": "Recent sessions",
+  "nav.news": "F1 News",
+  "nav.video": "F1 Video",
   "nav.meeting": "Meeting",
   "nav.session": "Session",
   "nav.compare": "Compare",
