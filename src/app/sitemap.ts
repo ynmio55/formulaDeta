@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = "https://formula-data-five.vercel.app";
+const BASE_URL = "https://formuladata.miosmooth.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
