@@ -22,12 +22,29 @@ function TrackPositionContent() {
   const [error, setError] = useState<string | null>(null);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [frame, setFrame] = useState(0);
+
+  useEffect(() => {
+    if (!playing || locations.length < 2) return;
+    const timer = setInterval(() => {
+      setFrame(current => {
+        if (current + speed >= locations.length) {
+          setPlaying(false);
+          return locations.length - 1;
+        }
+        return current + speed;
+      });
+    }, 50);
+    return () => clearInterval(timer);
+  }, [playing, locations.length, speed]);
 
   // Fetch some location data for the track visualization
   // Since fetching ALL locations for a session is huge (millions of rows),
   // we limit it by fetching a short time window.
   useEffect(() => {
-    if (!sessionKey) return;
+    if (!sessionKey || !drivers?.length) return;
     
     const fetchLocations = async () => {
       setLoading(true);
@@ -40,7 +57,7 @@ function TrackPositionContent() {
         // or just accept we can't load the whole grid without freezing.
         const data = await fetchOpenF1("/v1/location", { 
           session_key: sessionKey,
-          driver_number: 1 // Fetch Verstappen to get the track map
+          driver_number: drivers[0].driver_number // Use an actual driver from the selected session
         });
         
         // To draw a clean track outline, we don't want the entire 2-hour session (overlapping squiggles).
@@ -50,6 +67,8 @@ function TrackPositionContent() {
         // Downsample to keep it smooth but performant
         const downsampled = lapData.filter((_, i) => i % 10 === 0);
         setLocations(downsampled);
+        setFrame(0);
+        setPlaying(false);
       } catch (err: any) {
         setError("Beta endpoint is currently unavailable or returned an error.");
       } finally {
@@ -58,7 +77,7 @@ function TrackPositionContent() {
     };
     
     fetchLocations();
-  }, [sessionKey]);
+  }, [sessionKey, drivers]);
 
   useEffect(() => {
     if (!canvasRef.current || locations.length === 0) return;
@@ -120,7 +139,7 @@ function TrackPositionContent() {
     // Draw a moving dot for demonstration
     // Since we only fetched 1 driver, we just draw the first point.
     if (locations.length > 0) {
-      const first = locations[0];
+      const first = locations[Math.min(frame, locations.length - 1)];
       const px = offsetX + (first.x - minX) * scale;
       const py = height - (offsetY + (first.y - minY) * scale);
       
@@ -133,7 +152,7 @@ function TrackPositionContent() {
       ctx.stroke();
     }
     
-  }, [locations]);
+  }, [locations, frame]);
 
   return (
     <div className="space-y-6">
@@ -146,8 +165,9 @@ function TrackPositionContent() {
           
           <div className="flex justify-between items-center mb-6">
              <div className="flex gap-2">
-               <button className="bg-[var(--color-surface-2)] hover:bg-[var(--color-border-strong)] transition-colors p-2 rounded-md"><Play className="w-4 h-4" /></button>
-               <button className="bg-[var(--color-surface-2)] hover:bg-[var(--color-border-strong)] transition-colors p-2 rounded-md"><Pause className="w-4 h-4" /></button>
+               <button type="button" aria-label="Play replay" onClick={() => { if (frame >= locations.length - 1) setFrame(0); setPlaying(true); }} disabled={!locations.length} className="bg-[var(--color-surface-2)] hover:bg-[var(--color-border-strong)] transition-colors p-2 rounded-md disabled:opacity-40"><Play className="w-4 h-4" /></button>
+               <button type="button" aria-label="Pause replay" onClick={() => setPlaying(false)} className="bg-[var(--color-surface-2)] hover:bg-[var(--color-border-strong)] transition-colors p-2 rounded-md"><Pause className="w-4 h-4" /></button>
+               <select aria-label="Replay speed" value={speed} onChange={e => setSpeed(Number(e.target.value))} className="bg-[var(--color-surface-2)] rounded-md px-2 text-sm"><option value={1}>1x</option><option value={2}>2x</option><option value={4}>4x</option></select>
              </div>
              
              {loading && (
@@ -158,9 +178,16 @@ function TrackPositionContent() {
           </div>
           
           <div className="flex items-start gap-2 text-blue-400 bg-blue-500/10 p-3 rounded-md text-sm border border-blue-500/20 mb-6">
-            <p><strong>Track Outline:</strong> Displaying a clean sample lap layout. Full live telemetry synchronization requires premium API access.</p>
+            <p><strong>Sample position replay:</strong> Playing the available location samples for one driver, not a synchronized full-grid race replay.</p>
           </div>
 
+          {locations.length > 1 && (
+            <label className="mb-4 flex items-center gap-3 text-xs text-gray-400">
+              Position sample
+              <input type="range" aria-label="Seek replay" min={0} max={locations.length - 1} value={frame} onChange={e => {setPlaying(false); setFrame(Number(e.target.value));}} className="w-full accent-red-500" />
+              <span className="tabular-nums">{frame + 1}/{locations.length}</span>
+            </label>
+          )}
           <div className="aspect-video w-full bg-[#0a0a0a] rounded-lg border border-[var(--color-border-subtle)] overflow-hidden flex items-center justify-center relative">
              <canvas 
                ref={canvasRef} 
