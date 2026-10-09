@@ -1,6 +1,7 @@
 "use client";
 
-import { useDrivers, useSessions } from "@/hooks/openf1";
+import { useDrivers, useLaps } from "@/hooks/openf1";
+import { useQueryClient } from "@tanstack/react-query";
 import { fetchOpenF1 } from "@/lib/openf1/client";
 import { CarData } from "@/lib/openf1/types";
 import { useState, useEffect } from "react";
@@ -33,7 +34,11 @@ function CompareContent() {
   
   const { data: drivers, isLoading: loadingDrivers } = useDrivers(activeSessionKey || undefined);
 
+  const queryClient = useQueryClient();
   const [selectedDrivers, setSelectedDrivers] = useState<number[]>([]);
+  const [selectedLap, setSelectedLap] = useState(0); // 0 = fastest valid lap per driver
+  const { data: availableLaps } = useLaps(activeSessionKey || undefined, selectedDrivers[0]);
+  const [telemetryError, setTelemetryError] = useState<string | null>(null);
   const [telemetryData, setTelemetryData] = useState<Record<number, CarData[]>>({});
   const [isLoadingTelemetry, setIsLoadingTelemetry] = useState(false);
 
@@ -51,45 +56,51 @@ function CompareContent() {
     });
   };
 
-  // Fetch telemetry when selection changes
+  // Fetch a single lap per driver instead of downloading whole-session telemetry.
   useEffect(() => {
     if (!activeSessionKey || selectedDrivers.length === 0) return;
-
+    let cancelled = false;
     const fetchTelemetry = async () => {
       setIsLoadingTelemetry(true);
-      const newTelemetry: Record<number, CarData[]> = {};
-      
+      setTelemetryError(null);
       try {
-        await Promise.all(
-          selectedDrivers.map(async (driverNumber) => {
-            // Check if we already have it to avoid refetching
-            if (telemetryData[driverNumber]) {
-              newTelemetry[driverNumber] = telemetryData[driverNumber];
-              return;
-            }
-            
-            // Fetch telemetry data for the entire session
-            // For production, we should add time ranges or just fetch fastest lap telemetry.
-            // Since this could be massive, we request the API, then downsample immediately.
-            const data = await fetchOpenF1("/v1/car_data", { 
-              session_key: activeSessionKey, 
-              driver_number: driverNumber 
-            });
-            
-            // Downsample to ~500 points for charting
-            newTelemetry[driverNumber] = downsample(data, 500);
-          })
-        );
-        setTelemetryData(newTelemetry);
-      } catch (e) {
-        console.error("Failed to fetch telemetry", e);
+        const entries = await Promise.all(selectedDrivers.map(async driverNumber => {
+          const laps = await queryClient.fetchQuery({
+            queryKey: ["laps", activeSessionKey, driverNumber],
+            queryFn: () => fetchOpenF1("/v1/laps", { session_key: activeSessionKey, driver_number: driverNumber }),
+            staleTime: 30 * 60 * 1000,
+          });
+          const validLaps = laps.filter(l => l.date_start && l.lap_duration && l.lap_duration > 0);
+          const lap = selectedLap === 0
+            ? [...validLaps].sort((a, b) => (a.lap_duration || Infinity) - (b.lap_duration || Infinity))[0]
+            : validLaps.find(l => l.lap_number === selectedLap);
+          if (!lap?.date_start || !lap.lap_duration) return [driverNumber, [] as CarData[]] as const;
+          const startDate = new Date(lap.date_start);
+          if (!Number.isFinite(startDate.getTime())) return [driverNumber, [] as CarData[]] as const;
+          const endDate = new Date(startDate.getTime() + lap.lap_duration * 1000);
+          const data = await fetchOpenF1("/v1/car_data", {
+            session_key: activeSessionKey,
+            driver_number: driverNumber,
+            date: { gte: startDate.toISOString(), lte: endDate.toISOString() },
+          });
+          return [driverNumber, downsample(data, 500)] as const;
+        }));
+        if (!cancelled) setTelemetryData(Object.fromEntries(entries));
+      } catch {
+        if (!cancelled) {
+          setTelemetryData({});
+          setTelemetryError("Telemetry could not be loaded. Check the selected lap or try another session.");
+        }
       } finally {
-        setIsLoadingTelemetry(false);
+        if (!cancelled) setIsLoadingTelemetry(false);
       }
     };
+    void fetchTelemetry();
+    return () => { cancelled = true; };
+  }, [selectedDrivers, activeSessionKey, selectedLap, queryClient]);
 
-    fetchTelemetry();
-  }, [selectedDrivers, activeSessionKey]);
+  const relativeSeconds = (data: CarData[], point: CarData) =>
+    data.length ? Math.round((Date.parse(point.date) - Date.parse(data[0].date)) / 10) / 100 : 0;
 
   if (!activeSessionKey) {
     return <div className="text-gray-400 p-8 text-center bg-[var(--color-surface-1)] rounded-xl border border-[var(--color-border-subtle)]">{t("state.selectSession")}</div>;
@@ -103,7 +114,7 @@ function CompareContent() {
       name: driver?.name_acronym || `#${dNumber}`,
       type: 'line',
       showSymbol: false,
-      data: data.map(d => [d.date, d.speed]),
+      data: data.map(d => [relativeSeconds(data, d), d.speed]),
       lineStyle: {
         color: driver?.team_colour ? `#${driver.team_colour}` : undefined
       }
@@ -115,8 +126,9 @@ function CompareContent() {
     legend: { textStyle: { color: '#ccc' } },
     grid: { left: '5%', right: '5%', bottom: '15%', top: '15%' },
     xAxis: { 
-      type: 'time', 
-      axisLabel: { color: '#888', formatter: '{HH}:{mm}:{ss}' },
+      type: 'value',
+      name: 'Elapsed (s)',
+      axisLabel: { color: '#888' },
       splitLine: { show: false }
     },
     yAxis: { 
@@ -138,7 +150,7 @@ function CompareContent() {
       name: driver?.name_acronym || `#${dNumber}`,
       type: 'line',
       showSymbol: false,
-      data: data.map(d => [d.date, d.throttle]),
+      data: data.map(d => [relativeSeconds(data, d), d.throttle]),
       lineStyle: {
         color: driver?.team_colour ? `#${driver.team_colour}` : undefined
       }
@@ -163,7 +175,7 @@ function CompareContent() {
       type: "line",
       step: field === "n_gear" ? "end" : undefined,
       showSymbol: false,
-      data: (telemetryData[dNumber] || []).map(d => [d.date, Number(d[field])]),
+      data: (telemetryData[dNumber] || []).map(d => [relativeSeconds(telemetryData[dNumber] || [], d), Number(d[field])]),
       lineStyle: { color: driver?.team_colour ? "#" + driver.team_colour : undefined }
     };
   });
@@ -219,7 +231,21 @@ function CompareContent() {
         </div>
 
         {/* Charts Area */}
+        <div className="hidden" aria-hidden="true"></div>
         <div className="flex-1 space-y-6">
+          {selectedDrivers.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] p-3">
+              <label htmlFor="lap-selection" className="text-sm font-medium">Compare laps</label>
+              <select id="lap-selection" value={selectedLap} onChange={e => setSelectedLap(Number(e.target.value))}
+                className="rounded-md bg-[var(--color-surface-2)] px-3 py-2 text-sm">
+                <option value={0}>Fastest valid lap for each driver</option>
+                {[...new Set((availableLaps || []).filter(l => l.date_start && l.lap_duration).map(l => l.lap_number))]
+                  .sort((a,b) => a-b).map(n => <option key={n} value={n}>Lap {n}</option>)}
+              </select>
+              <span className="text-xs text-[var(--color-text-tertiary)]">Compare aligned elapsed seconds</span>
+            </div>
+          )}
+          {telemetryError && <p role="alert" className="rounded-md border border-red-700 p-3 text-sm text-red-400">{telemetryError}</p>}
           {selectedDrivers.length === 0 ? (
             <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-10 flex flex-col items-center justify-center text-gray-500 min-h-[400px]">
               <Search className="w-10 h-10 mb-4 opacity-50" />
