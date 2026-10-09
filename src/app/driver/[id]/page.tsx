@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useFavorite } from "@/lib/favorites";
 import { fetchOpenF1 } from "@/lib/openf1/client";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, User, Trophy, Newspaper, Star, Award, Flag } from "lucide-react";
@@ -114,6 +115,7 @@ export default function DriverPage() {
   const { data: drivers, isLoading, isError } = useDriver(id);
   const driver = drivers && drivers.length > 0 ? drivers[drivers.length - 1] : undefined;
   const { stats, loading: statsLoading } = useDriverCareerStats(driver?.driver_number, driver?.full_name);
+  const { favorite, toggle } = useFavorite("driver", driver?.full_name || "");
 
   const [news, setNews] = useState<F1NewsItem[]>([]);
   const [loadingNews, setLoadingNews] = useState(true);
@@ -162,6 +164,10 @@ export default function DriverPage() {
             className="text-white/70 hover:text-white flex items-center gap-2 w-fit transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <button type="button" onClick={toggle} aria-pressed={favorite}
+            className="rounded-md border border-white/40 bg-black/50 px-3 py-2 text-sm text-white w-fit">
+            {favorite ? "★ Saved driver" : "☆ Save driver"}
           </button>
           <div className="mt-auto">
             <div className="text-white text-2xl md:text-3xl font-medium leading-none">{driver.first_name}</div>
