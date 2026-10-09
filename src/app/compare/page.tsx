@@ -320,7 +320,8 @@ function CompareContent() {
               {(["brake", "n_gear"] as const).map(field => (
                 <div key={field} className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-4">
                   <h3 className="font-medium ml-2 mb-2">{field === "brake" ? "Brake" : "Gear"} Trace</h3>
-                  <ReactECharts option={{...speedChartOption, series: makeSeries(field),
+                  <button type="button" className="mb-2 rounded border border-gray-600 px-2 py-1 text-xs" onClick={() => exportChart(field)}>Export PNG</button>
+                  <ReactECharts ref={instance => connectChart(field, instance)} option={{...speedChartOption, series: makeSeries(field),
                     yAxis: { type: "value", name: field === "brake" ? "Brake" : "Gear" },
                   }} style={{height: 300, width: "100%"}} opts={{renderer: "canvas"}} />
                 </div>
