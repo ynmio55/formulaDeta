@@ -14,7 +14,15 @@ export function useMeetings(year?: number) {
 export function useLatestMeeting() {
   return useQuery({
     queryKey: ["meetings", "latest"],
-    queryFn: () => fetchOpenF1("/v1/meetings", { meeting_key: "latest" }),
+    queryFn: async () => {
+      // The OpenF1 "latest" alias may require real-time access.
+      // The season calendar is a public historical/schedule endpoint.
+      const year = new Date().getUTCFullYear();
+      const meetings = await fetchOpenF1("/v1/meetings", { year });
+      const ordered = [...meetings].sort((a, b) => Date.parse(a.date_start) - Date.parse(b.date_start));
+      const current = ordered.filter(m => Date.parse(m.date_start) <= Date.now()).at(-1);
+      return current ? [current] : ordered.slice(0, 1);
+    },
   });
 }
 

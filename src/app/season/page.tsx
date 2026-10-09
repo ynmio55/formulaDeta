@@ -12,7 +12,7 @@ import { LayoutGrid, List } from "lucide-react";
 
 export default function SeasonExplorer() {
   const { year } = useAppStore();
-  const { data: meetings, isLoading, isError } = useMeetings(year);
+  const { data: meetings, isLoading, isError, refetch } = useMeetings(year);
   const { t, isReady } = useTranslation();
   const [viewMode, setViewMode] = useState<"grid" | "timeline">("grid");
 
@@ -97,7 +97,7 @@ export default function SeasonExplorer() {
       ) : isError ? (
         <div className="bg-[var(--color-f1-red)]/10 border border-[var(--color-f1-red)]/30 text-red-400 rounded-xl p-8 text-center flex flex-col items-center">
           <p className="mb-4">{t("state.error")}</p>
-          <button className="bg-[var(--color-f1-red-hover)] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
+          <button type="button" onClick={() => void refetch()} className="bg-[var(--color-f1-red-hover)] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
             {t("state.retry")}
           </button>
         </div>

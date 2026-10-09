@@ -53,6 +53,19 @@ export async function GET(
       return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
     }
     
+    // Championship endpoints are session-scoped in OpenF1, not year-scoped.
+    // For year-based standings pages, use year-aware Jolpi standings directly.
+    if (["championship_drivers", "championship_teams"].includes(endpointName) &&
+        /^20\d{2}$/.test(searchParams.get("year") || "")) {
+      const standings = await getJolpiFallback(endpointName, searchParams);
+      if (standings !== null) {
+        return NextResponse.json(standings, {
+          headers: { "Cache-Control": "public, max-age=300, s-maxage=3600" },
+        });
+      }
+      return NextResponse.json({ error: "Season standings provider unavailable" }, { status: 503 });
+    }
+
     const targetUrl = `${openF1Base}/${endpointName}${queryString ? `?${queryString}` : ""}`;
 
     // Simple timeout mechanism using AbortController

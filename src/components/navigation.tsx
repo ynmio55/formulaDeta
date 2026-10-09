@@ -100,7 +100,7 @@ export default function Navigation() {
                         <Link
                           key={item.key}
                           href={item.href}
-                          title={!isExpanded ? t(item.key) : undefined}
+                          title={!isExpanded ? ("label" in item ? item.label : t(item.key)) : undefined}
                           className={clsx(
                             "flex items-center rounded-lg transition-all duration-200 relative group/item",
                             isExpanded ? "px-3 py-2.5" : "p-3 mx-auto justify-center w-12",
@@ -119,7 +119,7 @@ export default function Navigation() {
                             "ml-3 text-sm font-medium whitespace-nowrap transition-opacity duration-300",
                             isExpanded ? "opacity-100 block" : "opacity-0 w-0 hidden"
                           )}>
-                            {t(item.key)}
+                            {"label" in item ? item.label : t(item.key)}
                           </span>
                         </Link>
                       );
