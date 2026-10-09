@@ -25,6 +25,8 @@ const ALLOWED_ENDPOINTS = new Set([
   "weather",
 ]);
 
+let cachedToken: { value: string; until: number } | null = null;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ endpoint: string[] }> }
@@ -80,7 +82,9 @@ export async function GET(
     // Credentials stay on the server and are never returned to the browser.
     const username = process.env.OPENF1_USERNAME;
     const password = process.env.OPENF1_PASSWORD;
-    if (username && password) {
+    if (cachedToken && cachedToken.until > Date.now()) {
+      headers.Authorization = `Bearer ${cachedToken.value}`;
+    } else if (username && password) {
       const tokenResponse = await fetch("https://api.openf1.org/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -92,6 +96,7 @@ export async function GET(
         const tokenData: unknown = await tokenResponse.json();
         if (typeof tokenData === "object" && tokenData !== null &&
             "access_token" in tokenData && typeof tokenData.access_token === "string") {
+          cachedToken = { value: tokenData.access_token, until: Date.now() + 45 * 60_000 };
           headers.Authorization = `Bearer ${tokenData.access_token}`;
         }
       }
