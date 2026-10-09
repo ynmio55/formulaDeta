@@ -93,7 +93,7 @@ function RaceWeekendTimeline({ sessions, gmtOffset, currentTime }: { sessions: a
 }
 
 export default function OverviewDashboard() {
-  const { data: latestMeeting, isLoading: loadingMeeting } = useLatestMeeting();
+  const { data: latestMeeting, isLoading: loadingMeeting, dataUpdatedAt: meetingUpdatedAt } = useLatestMeeting();
   const { t, isReady } = useTranslation();
   const { setYear } = useAppStore();
   const router = useRouter();
@@ -159,6 +159,9 @@ export default function OverviewDashboard() {
 
   return (
     <div className="space-y-6 w-full max-w-[1920px] mx-auto animate-in fade-in duration-700">
+      <p className="text-right text-xs text-[var(--color-text-tertiary)]">
+        Meeting data fetched: {meetingUpdatedAt ? new Date(meetingUpdatedAt).toLocaleString() : "Unavailable"}
+      </p>
       
       {/* 1. HERO COMMAND CENTER */}
       <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border-strong)] bg-black h-[280px] md:h-[320px] flex flex-col justify-end p-6 md:p-10 group">
