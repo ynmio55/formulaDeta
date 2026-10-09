@@ -1,8 +1,9 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { usePitStops, useDrivers, useSessionDetails, useStints } from "@/hooks/openf1";
+import { usePitStops, useDrivers, useSessionDetails, useStints, useLaps } from "@/hooks/openf1";
 import { formatDateTime } from "@/lib/date-utils";
+import { calculateStintTrend } from "@/lib/openf1/strategy-analysis";
 import { useTranslation } from "@/i18n/config";
 import { Car } from "lucide-react";
 import { SessionLayout } from "@/components/session/SessionLayout";
@@ -16,6 +17,7 @@ function StrategyContent() {
   const { data: pits, isLoading: loadingPits } = usePitStops(sessionKey || undefined);
   const { data: drivers } = useDrivers(sessionKey || undefined);
   const { data: stints, isLoading: loadingStints, isError: stintsError } = useStints(sessionKey || undefined);
+  const { data: laps } = useLaps(sessionKey || undefined);
   const { data: sessionDetailsData } = useSessionDetails(sessionKey || undefined);
   
   const gmtOffset = sessionDetailsData?.[0]?.gmt_offset;
@@ -80,6 +82,39 @@ function StrategyContent() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </section>
+      <section aria-label="Lap-time trends by stint" className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] p-4 md:p-6">
+        <h2 className="text-lg font-semibold">Observed lap-time trends</h2>
+        <p className="mt-1 mb-4 text-xs text-[var(--color-text-tertiary)]">
+          Linear trend by stint (s/lap). Positive means slower later laps. This is not a tyre-degradation prediction.
+        </p>
+        {!laps?.length || !stints?.length ? (
+          <p className="text-sm text-[var(--color-text-secondary)]">Lap/stint analysis data is unavailable.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[540px] text-left text-sm">
+              <thead className="border-b border-[var(--color-border-subtle)] text-xs uppercase text-gray-400">
+                <tr><th className="p-3">Driver</th><th className="p-3">Tyre</th><th className="p-3">Laps</th><th className="p-3 text-right">Trend (s/lap)</th></tr>
+              </thead>
+              <tbody>
+                {stints.map(stint => {
+                  const trend = calculateStintTrend(laps, stint.driver_number, stint.lap_start, stint.lap_end);
+                  return (
+                    <tr key={String(stint.driver_number) + "-" + stint.stint_number}
+                      className="border-b border-[var(--color-border-subtle)]">
+                      <td className="p-3">{driverMap.get(stint.driver_number)?.name_acronym || "#" + stint.driver_number}</td>
+                      <td className="p-3">{stint.compound || "—"}</td>
+                      <td className="p-3 tabular-nums">{stint.lap_start}–{stint.lap_end}</td>
+                      <td className="p-3 text-right font-mono tabular-nums">
+                        {trend ? (trend.slope >= 0 ? "+" : "") + trend.slope.toFixed(3) : "Insufficient laps"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </section>
