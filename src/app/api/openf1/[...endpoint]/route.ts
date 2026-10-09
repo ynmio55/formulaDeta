@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getJolpiFallback } from "@/lib/jolpi-fallback";
+import { validateOpenF1Query, cacheControlFor } from "@/lib/openf1/proxy-policy";
 
 // We require the endpoint to be exactly one of the allowed 18 endpoints
 const ALLOWED_ENDPOINTS = new Set([
@@ -23,16 +24,6 @@ const ALLOWED_ENDPOINTS = new Set([
   "weather",
 ]);
 
-const ALLOWED_QUERY_KEYS = new Set([
-  "year", "meeting_key", "session_key", "driver_number", "date", "date_start",
-  "date_end", "lap_number", "team_name", "country_name", "circuit_short_name",
-  "session_name", "meeting_name", "position", "speed", "rpm", "n_gear",
-  "throttle", "brake", "drs", "duration", "pit_duration", "compound"
-]);
-const MAX_QUERY_LENGTH = 1800;
-const isLiveQuery = (params: URLSearchParams) =>
-  params.get("session_key") === "latest" || params.get("meeting_key") === "latest";
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ endpoint: string[] }> }
@@ -51,8 +42,7 @@ export async function GET(
     const openF1Base = process.env.OPENF1_API_BASE_URL || "https://api.openf1.org/v1";
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
-    if (queryString.length > MAX_QUERY_LENGTH ||
-        [...searchParams.keys()].some(key => !ALLOWED_QUERY_KEYS.has(key.replace(/(>=|<=|>|<)$/, "")))) {
+    if (!validateOpenF1Query(searchParams)) {
       return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
     }
     
@@ -105,23 +95,7 @@ export async function GET(
     // Proxy the response
     const data = await res.json();
 
-    // Cache historical data (meetings, sessions, results) for a long time
-    // Cache live data (telemetry, weather) for a short time
-    let cacheControl = "public, max-age=60, s-maxage=120"; // default 1-2 mins
-    
-    if (!isLiveQuery(searchParams) && ["meetings", "sessions", "session_result", "starting_grid"].includes(endpointName)) {
-      cacheControl = "public, max-age=3600, s-maxage=86400"; // 1h browser, 24h CDN
-    } else if (["car_data", "location"].includes(endpointName)) {
-      // Telemetry might be cached for a long time if it's historical
-      const isLatest = isLiveQuery(searchParams);
-      if (!isLatest) {
-        cacheControl = "public, max-age=3600, s-maxage=86400"; // Historical telemetry never changes
-      } else {
-        cacheControl = "public, max-age=10, s-maxage=10"; // Short cache for live
-      }
-    }
-
-    if (isLiveQuery(searchParams)) cacheControl = "public, max-age=0, s-maxage=5";
+    const cacheControl = cacheControlFor(endpointName, searchParams);
 
     return NextResponse.json(data, {
       headers: {
