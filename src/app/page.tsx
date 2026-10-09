@@ -35,7 +35,7 @@ import { NewsCard, NewsCardSkeleton } from "@/components/media/NewsCard";
 import { VideoCard, VideoCardSkeleton } from "@/components/media/VideoCard";
 
 // Timeline Component
-function RaceWeekendTimeline({ sessions, currentSessionKey, gmtOffset }: { sessions: any[], currentSessionKey: number | null | undefined, gmtOffset: string }) {
+function RaceWeekendTimeline({ sessions, gmtOffset }: { sessions: any[], gmtOffset: string }) {
   if (!sessions || sessions.length === 0) return null;
   
   return (
@@ -381,7 +381,7 @@ export default function OverviewDashboard() {
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 -mr-4 relative">
             {sessions ? (
-              <RaceWeekendTimeline sessions={sessions} currentSessionKey={sessionKey} gmtOffset={meeting.gmt_offset} />
+              <RaceWeekendTimeline sessions={sessions} gmtOffset={meeting.gmt_offset} />
             ) : (
               <div className="flex items-center justify-center h-full text-[var(--color-text-tertiary)] animate-pulse">Loading schedule...</div>
             )}
