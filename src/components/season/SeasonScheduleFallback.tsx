@@ -29,7 +29,7 @@ export default function SeasonScheduleFallback({
   compact?: boolean;
   retryOriginal?: () => void;
 }) {
-  const { data, isLoading, error, refetch } = useQuery<SeasonSchedule>({
+  const { data, isLoading, error, refetch, dataUpdatedAt } = useQuery<SeasonSchedule>({
     queryKey: ["jolpica-schedule-fallback", year],
     queryFn: async () => {
       const response = await fetch(`/api/season-schedule?year=${year}`);
@@ -41,7 +41,7 @@ export default function SeasonScheduleFallback({
   });
 
   const races = data?.races || [];
-  const now = Date.now();
+  const now = dataUpdatedAt;
   const upcoming = races.find(race => Date.parse(race.date + "T23:59:59Z") >= now);
   const previous = [...races].reverse().find(race => Date.parse(race.date + "T23:59:59Z") < now);
   const shown = compact
