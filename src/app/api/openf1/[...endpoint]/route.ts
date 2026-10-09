@@ -31,7 +31,7 @@ export async function GET(
     const { endpoint } = await params;
     const endpointName = endpoint[0];
 
-    if (!endpointName || !ALLOWED_ENDPOINTS.has(endpointName)) {
+    if (endpoint.length !== 1 || !endpointName || !ALLOWED_ENDPOINTS.has(endpointName)) {
       return NextResponse.json(
         { error: "Invalid or unauthorized endpoint" },
         { status: 400 }
@@ -58,12 +58,15 @@ export async function GET(
       headers["x-api-key"] = process.env.OPENF1_API_KEY;
     }
 
-    const res = await fetch(targetUrl, {
-      signal: controller.signal,
-      headers,
-    });
-
-    clearTimeout(timeoutId);
+    let res: Response;
+    try {
+      res = await fetch(targetUrl, {
+        signal: controller.signal,
+        headers,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!res.ok) {
       // If API returns an error (404 Not Found for beta endpoints, 401/403 blocked, etc.), try Jolpi fallback
@@ -72,9 +75,8 @@ export async function GET(
         return NextResponse.json(fallbackData);
       }
 
-      const errorText = await res.text().catch(() => "");
       return NextResponse.json(
-        { error: `Upstream error: ${res.statusText}`, details: errorText },
+        { error: "Upstream API unavailable", upstreamStatus: res.status },
         { status: res.status }
       );
     }
@@ -111,7 +113,7 @@ export async function GET(
       );
     }
     return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }
