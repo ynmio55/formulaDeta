@@ -8,6 +8,8 @@ export function useMeetings(year?: number) {
   return useQuery({
     queryKey: ["meetings", year],
     queryFn: () => fetchOpenF1("/v1/meetings", year ? { year } : {}),
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -23,6 +25,8 @@ export function useLatestMeeting() {
       const current = ordered.filter(m => Date.parse(m.date_start) <= Date.now()).at(-1);
       return current ? [current] : ordered.slice(0, 1);
     },
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

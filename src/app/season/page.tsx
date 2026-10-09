@@ -5,6 +5,7 @@ import { useAppStore } from "@/lib/store";
 import { useTranslation } from "@/i18n/config";
 import { useState, useMemo } from "react";
 import SeasonHeader from "@/components/season/SeasonHeader";
+import SeasonScheduleFallback from "@/components/season/SeasonScheduleFallback";
 import FeaturedRace from "@/components/season/FeaturedRace";
 import RaceCard from "@/components/season/RaceCard";
 import RaceTimeline from "@/components/season/RaceTimeline";
@@ -95,12 +96,7 @@ export default function SeasonExplorer() {
           </div>
         </div>
       ) : isError ? (
-        <div className="bg-[var(--color-f1-red)]/10 border border-[var(--color-f1-red)]/30 text-red-400 rounded-xl p-8 text-center flex flex-col items-center">
-          <p className="mb-4">{t("state.error")}</p>
-          <button type="button" onClick={() => void refetch()} className="bg-[var(--color-f1-red-hover)] text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors">
-            {t("state.retry")}
-          </button>
-        </div>
+        <SeasonScheduleFallback year={year} retryOriginal={() => void refetch()} />
       ) : !meetings || meetings.length === 0 ? (
         <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] text-gray-400 rounded-xl p-16 text-center text-lg">
           {t("state.noData")}

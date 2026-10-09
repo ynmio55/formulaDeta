@@ -124,10 +124,12 @@ export async function getJolpiFallback(endpoint: string, searchParams: URLSearch
         return {
           driver_number: num,
           full_name: `${d.givenName} ${d.familyName}`,
+          first_name: d.givenName,
+          last_name: d.familyName,
           name_acronym: d.code,
           team_name: teamNameMap[cid] || s.Constructors[0]?.name,
           team_colour: teamColorMap[cid] || "ffffff",
-          headshot_url: headshots[num] || undefined
+          headshot_url: year === "2026" ? headshots[num] : undefined
         };
       });
     }
