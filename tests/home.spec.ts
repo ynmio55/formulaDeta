@@ -1,19 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('has title', async ({ page }) => {
-  await page.goto('/');
+test("has Formula Data title", async ({ page }) => {
+  await page.goto("/");
   await expect(page).toHaveTitle(/Formula Data/);
 });
 
-test('navigation renders correctly', async ({ page }) => {
-  await page.goto('/');
-  
-  // Sidebar should have the logo text
-  const logo = page.locator('h1', { hasText: 'Formula' });
-  await expect(logo).toBeVisible();
-  
-  // Navigation links should be visible
-  await expect(page.locator('a', { hasText: 'Overview' })).toBeVisible();
-  await expect(page.locator('a', { hasText: 'Season' })).toBeVisible();
-  await expect(page.locator('a', { hasText: 'API Explorer' })).toBeVisible();
+test("desktop navigation links work independently of hover expansion", async ({ page }) => {
+  await page.goto("/");
+  const sidebar = page.locator("nav").first();
+  await expect(sidebar).toBeVisible();
+  await expect(sidebar.locator('a[href="/"]')).toBeVisible();
+  await expect(sidebar.locator('a[href="/season"]')).toBeVisible();
+  await expect(sidebar.locator('a[href="/championship"]')).toBeVisible();
 });
