@@ -12,20 +12,6 @@ import { Suspense } from "react";
 import { SessionLayout } from "@/components/session/SessionLayout";
 import { useTranslation } from "@/i18n/config";
 
-// Function to downsample telemetry data for charts (to prevent browser freezing)
-// Keeps 1 point every N points
-function downsample(data: CarData[], targetPoints: number = 200) {
-  if (!data || data.length === 0) return [];
-  if (data.length <= targetPoints) return data;
-  
-  const step = Math.floor(data.length / targetPoints);
-  const result = [];
-  for (let i = 0; i < data.length; i += step) {
-    result.push(data[i]);
-  }
-  return result;
-}
-
 function CompareContent() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
@@ -78,12 +64,16 @@ function CompareContent() {
           const startDate = new Date(lap.date_start);
           if (!Number.isFinite(startDate.getTime())) return [driverNumber, [] as CarData[]] as const;
           const endDate = new Date(startDate.getTime() + lap.lap_duration * 1000);
-          const data = await fetchOpenF1("/v1/car_data", {
-            session_key: activeSessionKey,
-            driver_number: driverNumber,
-            date: { gte: startDate.toISOString(), lte: endDate.toISOString() },
+          const requestParams = new URLSearchParams({
+            session_key: String(activeSessionKey),
+            driver_number: String(driverNumber),
+            start: startDate.toISOString(),
+            end: endDate.toISOString(),
           });
-          return [driverNumber, downsample(data, 500)] as const;
+          const response = await fetch(`/api/telemetry?${requestParams.toString()}`);
+          if (!response.ok) throw new Error(`Telemetry request failed: ${response.status}`);
+          const data = await response.json() as CarData[];
+          return [driverNumber, data] as const;
         }));
         if (!cancelled) setTelemetryData(Object.fromEntries(entries));
       } catch {
