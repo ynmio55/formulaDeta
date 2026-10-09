@@ -92,6 +92,13 @@ export async function GET(
       clearTimeout(timeoutId);
     }
 
+    if (!res.ok && (res.status === 401 || res.status === 403)) {
+      return NextResponse.json({
+        error: "OpenF1 access denied. Check OPENF1_API_KEY and the provider subscription for this season.",
+        upstreamStatus: res.status,
+      }, { status: 503, headers: { "Cache-Control": "no-store" } });
+    }
+
     if (!res.ok) {
       // If API returns an error (404 Not Found for beta endpoints, 401/403 blocked, etc.), try Jolpi fallback
       // A fallback is only safe for standings, and must not mask auth/rate-limit errors.
