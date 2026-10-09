@@ -101,7 +101,7 @@ export default function SeasonScheduleFallback({
   const renderRace = (race: ScheduledRace, label?: string) => (
     <article key={race.round} className="min-w-0 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-2)] p-5">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-        {label || `${words.round} ${race.round}`} · {words.round} {race.round}
+        {label ? `${label} · ${words.round} ${race.round}` : `${words.round} ${race.round}`}
       </p>
       <h3 className="mt-2 text-base font-bold text-white">{race.name}</h3>
       <p className="mt-2 text-sm text-[var(--color-text-secondary)]">{race.circuit || race.city}</p>
