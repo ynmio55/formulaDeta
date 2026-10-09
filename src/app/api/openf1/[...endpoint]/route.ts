@@ -118,6 +118,19 @@ export async function GET(
       clearTimeout(timeoutId);
     }
 
+    // Recover season roster information during live-session public API lockdown.
+    // Jolpica driver IDs and team names are real standings data; they are not
+    // converted into OpenF1 session/meeting IDs.
+    if (!res.ok && (res.status === 401 || res.status === 403) &&
+        endpointName === "drivers" && /^20\d{2}$/.test(searchParams.get("year") || "")) {
+      const fallback = await getJolpiFallback(endpointName, searchParams);
+      if (fallback !== null) {
+        return NextResponse.json(fallback, {
+          headers: { "Cache-Control": "public, s-maxage=300" },
+        });
+      }
+    }
+
     if (!res.ok && (res.status === 401 || res.status === 403)) {
       return NextResponse.json({
         error: "OpenF1 access denied. Check OPENF1_API_KEY and the provider subscription for this season.",
