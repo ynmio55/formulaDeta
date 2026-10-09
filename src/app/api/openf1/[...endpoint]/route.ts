@@ -76,8 +76,29 @@ export async function GET(
       "Accept": "application/json",
     };
     
+    // OpenF1 requires short-lived OAuth2 Bearer tokens for subscribed access.
+    // Credentials stay on the server and are never returned to the browser.
+    const username = process.env.OPENF1_USERNAME;
+    const password = process.env.OPENF1_PASSWORD;
+    if (username && password) {
+      const tokenResponse = await fetch("https://api.openf1.org/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username, password }),
+        signal: AbortSignal.timeout(10000),
+        cache: "no-store",
+      });
+      if (tokenResponse.ok) {
+        const tokenData: unknown = await tokenResponse.json();
+        if (typeof tokenData === "object" && tokenData !== null &&
+            "access_token" in tokenData && typeof tokenData.access_token === "string") {
+          headers.Authorization = `Bearer ${tokenData.access_token}`;
+        }
+      }
+    }
+
     // Add API key if provided to bypass live session restrictions
-    if (process.env.OPENF1_API_KEY) {
+    if (!headers.Authorization && process.env.OPENF1_API_KEY) {
       headers["Authorization"] = `Bearer ${process.env.OPENF1_API_KEY}`;
       headers["x-api-key"] = process.env.OPENF1_API_KEY;
     }
