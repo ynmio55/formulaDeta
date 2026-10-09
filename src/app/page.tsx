@@ -35,7 +35,7 @@ import { NewsCard, NewsCardSkeleton } from "@/components/media/NewsCard";
 import { VideoCard, VideoCardSkeleton } from "@/components/media/VideoCard";
 
 // Timeline Component
-function RaceWeekendTimeline({ sessions, gmtOffset }: { sessions: any[], gmtOffset: string }) {
+function RaceWeekendTimeline({ sessions, gmtOffset, currentTime }: { sessions: any[], gmtOffset: string, currentTime: number }) {
   if (!sessions || sessions.length === 0) return null;
   
   return (
@@ -45,7 +45,6 @@ function RaceWeekendTimeline({ sessions, gmtOffset }: { sessions: any[], gmtOffs
       {sessions.map((session) => {
         const start = Date.parse(session.date_start);
         const end = session.date_end ? Date.parse(session.date_end) : NaN;
-        const currentTime = Date.now();
         const isCurrent = Number.isFinite(start) && Number.isFinite(end) && currentTime >= start && currentTime <= end;
         const isCompleted = Number.isFinite(end) && currentTime > end;
         
@@ -381,7 +380,7 @@ export default function OverviewDashboard() {
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 -mr-4 relative">
             {sessions ? (
-              <RaceWeekendTimeline sessions={sessions} gmtOffset={meeting.gmt_offset} />
+              <RaceWeekendTimeline sessions={sessions} gmtOffset={meeting.gmt_offset} currentTime={liveNow.getTime()} />
             ) : (
               <div className="flex items-center justify-center h-full text-[var(--color-text-tertiary)] animate-pulse">Loading schedule...</div>
             )}
