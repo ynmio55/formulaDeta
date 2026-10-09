@@ -4,6 +4,7 @@ import { useDrivers, useLaps } from "@/hooks/openf1";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchOpenF1 } from "@/lib/openf1/client";
 import { CarData } from "@/lib/openf1/types";
+import { estimateDelta } from "@/lib/openf1/delta-time";
 import { useState, useEffect } from "react";
 import ReactECharts from "echarts-for-react";
 import { Search, Loader2 } from "lucide-react";
@@ -170,6 +171,22 @@ function CompareContent() {
     };
   });
 
+  const referenceDriver = selectedDrivers[0];
+  const deltaSeries = selectedDrivers.slice(1).map(number => {
+    const driver = drivers?.find(d => d.driver_number === number);
+    return {
+      name: driver?.name_acronym || "#" + number,
+      type: "line",
+      showSymbol: false,
+      data: estimateDelta(telemetryData[referenceDriver] || [], telemetryData[number] || []),
+      lineStyle: { color: driver?.team_colour ? "#" + driver.team_colour : undefined },
+    };
+  });
+  const representativeLap = selectedLap === 0
+    ? [...(availableLaps || [])].filter(l => l.lap_duration && l.date_start)
+        .sort((a,b) => (a.lap_duration || Infinity) - (b.lap_duration || Infinity))[0]
+    : (availableLaps || []).find(l => l.lap_number === selectedLap);
+
   const exportCsv = () => {
     const rows = ["driver,date,speed,throttle,brake,gear"];
     selectedDrivers.forEach(number => {
@@ -259,6 +276,32 @@ function CompareContent() {
                   }} style={{height: 300, width: "100%"}} opts={{renderer: "canvas"}} />
                 </div>
               ))}
+              {representativeLap && (
+                <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] p-4">
+                  <h3 className="mb-3 text-sm font-medium">Sector times · selected first driver</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[representativeLap.duration_sector_1, representativeLap.duration_sector_2, representativeLap.duration_sector_3].map((value, index) => (
+                      <div key={index} className="rounded-lg bg-[var(--color-surface-2)] p-3 text-center">
+                        <p className="text-xs text-gray-400">Sector {index + 1}</p>
+                        <p className="font-mono text-base">{value === null ? "—" : value.toFixed(3) + "s"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {deltaSeries.length > 0 && (
+                <div className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] p-4">
+                  <h3 className="mb-1 font-medium">Estimated Delta Time</h3>
+                  <p className="mb-3 text-xs text-gray-400">Approximation from integrated speed; not official timing. Positive = slower than first selected driver.</p>
+                  <ReactECharts option={{
+                    tooltip: {trigger: "axis"}, legend: {textStyle:{color:"#ccc"}},
+                    xAxis: {type:"value", name:"Estimated distance (m)"},
+                    yAxis: {type:"value", name:"Delta (s)"},
+                    series: deltaSeries, dataZoom: [{type:"inside"},{type:"slider"}],
+                    backgroundColor:"transparent",
+                  }} style={{height:320,width:"100%"}} opts={{renderer:"canvas"}} />
+                </div>
+              )}
               <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-4">
                 <h3 className="font-medium ml-2 mb-2">Speed Trace</h3>
                 <ReactECharts option={speedChartOption} style={{ height: 350, width: '100%' }} opts={{ renderer: 'canvas' }} />
