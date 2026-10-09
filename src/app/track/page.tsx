@@ -29,16 +29,16 @@ function TrackPositionContent() {
   useEffect(() => {
     if (!playing || locations.length < 2) return;
     const timer = setInterval(() => {
-      setFrame(current => {
-        if (current + speed >= locations.length) {
-          setPlaying(false);
-          return locations.length - 1;
-        }
-        return current + speed;
-      });
+      setFrame(current => Math.min(current + speed, locations.length - 1));
     }, 50);
     return () => clearInterval(timer);
   }, [playing, locations.length, speed]);
+
+  useEffect(() => {
+    if (playing && locations.length > 0 && frame >= locations.length - 1) {
+      setPlaying(false);
+    }
+  }, [frame, playing, locations.length]);
 
   // Fetch some location data for the track visualization
   // Since fetching ALL locations for a session is huge (millions of rows),
