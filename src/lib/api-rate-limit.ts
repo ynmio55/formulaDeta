@@ -44,7 +44,8 @@ export async function checkApiRateLimit(request: NextRequest): Promise<RateLimit
     if (!response.ok) return null;
     const payload: unknown = await response.json();
     if (!Array.isArray(payload)) return null;
-    const count = Number(payload[0]?.result);
+    const result = payload[0] as { result?: number | string } | undefined;
+    const count = Number(result?.result);
     if (!Number.isFinite(count)) return null;
     const retryAfter = WINDOW_SECONDS - Math.floor(Date.now() / 1000) % WINDOW_SECONDS;
     return {
