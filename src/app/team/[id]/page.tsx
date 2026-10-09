@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Shield, Newspaper } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
+import { useFavorite } from "@/lib/favorites";
 import { getF1News, F1NewsItem } from "@/services/newsService";
 import { NewsCard, NewsCardSkeleton } from "@/components/media/NewsCard";
 
@@ -12,6 +13,7 @@ export default function TeamPage() {
   const router = useRouter();
   const teamName = decodeURIComponent(params.id as string);
   const { year } = useAppStore();
+  const { favorite, toggle } = useFavorite("team", teamName);
 
   const [news, setNews] = useState<F1NewsItem[]>([]);
   const [loadingNews, setLoadingNews] = useState(true);
@@ -88,6 +90,10 @@ export default function TeamPage() {
             className="text-gray-500 hover:text-white flex items-center gap-2 w-fit transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <button type="button" onClick={toggle} aria-pressed={favorite}
+            className="rounded-md border border-white/40 bg-black/50 px-3 py-2 text-sm text-white w-fit">
+            {favorite ? "★ Saved team" : "☆ Save team"}
           </button>
           <div className="mt-auto">
             <p className="text-[var(--color-f1-red)] font-black text-xl uppercase tracking-widest">Constructor</p>

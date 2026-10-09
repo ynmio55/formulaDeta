@@ -21,7 +21,8 @@ import {
   Search,
   Newspaper,
   Video,
-  Tv
+  Tv,
+  History
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -31,6 +32,7 @@ const navGroups = [
     items: [
       { key: "nav.overview", href: "/", icon: LayoutDashboard },
       { key: "nav.season", href: "/season", icon: Calendar },
+      { key: "nav.recent", href: "/recent", icon: History, label: "Recent sessions" },
       { key: "nav.championship", href: "/championship", icon: Trophy },
       { key: "nav.live", href: "/stream", icon: Tv },
       { key: "news", href: "/news", icon: Newspaper, label: "F1 News" },
@@ -44,6 +46,7 @@ export default function Navigation() {
   const searchParams = useSearchParams();
   const { t, isReady } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   if (!isReady) return null;
 
@@ -142,10 +145,35 @@ export default function Navigation() {
         </nav>
       </div>
 
+      {moreOpen && (
+        <div className="md:hidden fixed inset-x-3 bottom-24 z-50 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] p-4 shadow-2xl" role="dialog" aria-label="More tools">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-sm font-semibold">Analysis tools</span>
+            <button type="button" onClick={() => setMoreOpen(false)} aria-label="Close tools menu" className="rounded p-2 text-sm hover:bg-[var(--color-surface-2)]">Close</button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              {href:"/compare",label:"Telemetry"},
+              {href:"/track",label:"Track replay"},
+              {href:"/strategy",label:"Strategy"},
+              {href:"/weather",label:"Weather"},
+              {href:"/radio",label:"Team radio"},
+              {href:"/api-explorer",label:"API explorer"},
+              {href:"/search",label:"Search"},
+              {href:"/recent",label:"Recent sessions"},
+            ].map(item => (
+              <Link key={item.href} href={item.href + keySuffix} onClick={() => setMoreOpen(false)}
+                className="rounded-lg bg-[var(--color-surface-2)] px-3 py-3 text-sm hover:text-white">
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       {/* ===== MOBILE BOTTOM NAVIGATION BAR ===== */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-surface-1)]/95 backdrop-blur-xl border-t border-[var(--color-border-subtle)]">
         <div className="flex items-center justify-around px-2 py-2">
-          {navGroups[0].items.map((item) => {
+          {navGroups[0].items.slice(0, 4).map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
@@ -171,6 +199,12 @@ export default function Navigation() {
               </Link>
             );
           })}
+          <button type="button" onClick={() => setMoreOpen(open => !open)}
+            aria-label="More Formula Data tools" aria-expanded={moreOpen}
+            className="flex flex-col items-center gap-1 px-3 py-1.5 min-w-[52px]">
+            <div className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--color-text-tertiary)]"><Search className="h-4 w-4" /></div>
+            <span className="text-[9px] font-bold uppercase tracking-wide">More</span>
+          </button>
         </div>
       </div>
     </>

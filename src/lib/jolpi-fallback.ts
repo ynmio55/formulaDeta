@@ -1,16 +1,14 @@
 export async function getJolpiFallback(endpoint: string, searchParams: URLSearchParams) {
   try {
-    // Extract year from query params, default to 2026 if not found
-    let year = searchParams.get("year");
-    if (!year || year === "latest") {
-      const sessionKey = searchParams.get("session_key");
-      const meetingKey = searchParams.get("meeting_key");
-      if (sessionKey === "latest" || meetingKey === "latest") {
-        year = "2026"; 
-      } else {
-        year = "2026"; // Fallback to 2026
-      }
-    }
+    // Do not fabricate a year for requests without a resolvable season.
+    // Returning null preserves the upstream error instead of silently serving wrong data.
+    const explicitYear = searchParams.get("year");
+    const year = explicitYear && /^20\d{2}$/.test(explicitYear)
+      ? explicitYear
+      : searchParams.get("session_key") === "latest" || searchParams.get("meeting_key") === "latest"
+        ? String(new Date().getUTCFullYear())
+        : null;
+    if (!year) return null;
 
     if (endpoint === "championship_drivers") {
       const res = await fetch(`https://api.jolpi.ca/ergast/f1/${year}/driverStandings.json`);
@@ -134,25 +132,8 @@ export async function getJolpiFallback(endpoint: string, searchParams: URLSearch
       });
     }
 
-    if (endpoint === "meetings") {
-      const res = await fetch(`https://api.jolpi.ca/ergast/f1/${year}.json`);
-      if (!res.ok) return null;
-      const data = await res.json();
-      const races = data.MRData.RaceTable.Races || [];
-      return races.map((r: any) => ({
-        meeting_key: Number(r.round), // use round as meeting key
-        meeting_name: r.raceName,
-        meeting_official_name: r.raceName,
-        location: r.Circuit.Location.locality,
-        country_name: r.Circuit.Location.country,
-        circuit_short_name: r.Circuit.circuitName,
-        date_start: `${r.date}T10:00:00Z`,
-        date_end: `${r.date}T12:00:00Z`,
-        year: Number(r.season),
-        is_cancelled: false
-      }));
-    }
-
+    // Jolpi race round is NOT an OpenF1 meeting_key; returning it as such
+    // creates broken links and mismatched session requests.
     return null;
   } catch (err) {
     console.error("Jolpi fallback failed:", err);

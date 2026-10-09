@@ -85,3 +85,12 @@ export function useWeather(sessionKey?: number | "latest") {
     enabled: !!sessionKey,
   });
 }
+
+export function useStints(sessionKey?: number) {
+  return useQuery({
+    queryKey: ["stints", sessionKey],
+    queryFn: () => fetchOpenF1("/v1/stints", { session_key: sessionKey! }),
+    enabled: !!sessionKey,
+    staleTime: 5 * 60 * 1000,
+  });
+}

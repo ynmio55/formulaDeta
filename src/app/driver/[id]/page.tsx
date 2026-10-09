@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useFavorite } from "@/lib/favorites";
 import { fetchOpenF1 } from "@/lib/openf1/client";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, User, Trophy, Newspaper, Star, Award, Flag } from "lucide-react";
@@ -23,52 +24,26 @@ interface DriverCareerStats {
   championships: number;
 }
 
-function useDriverCareerStats(driverNumber?: number): { stats: DriverCareerStats | null; loading: boolean } {
+function useDriverCareerStats(driverNumber?: number, fullName?: string): { stats: DriverCareerStats | null; loading: boolean } {
   const [stats, setStats] = useState<DriverCareerStats | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!driverNumber) return;
     
-    // Hardcoded override for 2024 active drivers to ensure 100% accurate current stats
-    // (Jolpica/Ergast is outdated and missing late 2024 data)
-    const currentStatsOverride: Record<number, DriverCareerStats> = {
-      1: { championships: 3, wins: 61, podiums: 107, poles: 40, races: 197 }, // Verstappen
-      11: { championships: 0, wins: 6, podiums: 39, poles: 3, races: 270 }, // Perez
-      44: { championships: 7, wins: 104, podiums: 199, poles: 104, races: 344 }, // Hamilton
-      63: { championships: 0, wins: 7, podiums: 25, poles: 6, races: 160 }, // Russell (Updated to mid-2026)
-      16: { championships: 0, wins: 6, podiums: 36, poles: 24, races: 137 }, // Leclerc
-      55: { championships: 0, wins: 3, podiums: 23, poles: 5, races: 196 }, // Sainz
-      4: { championships: 0, wins: 1, podiums: 21, poles: 3, races: 116 }, // Norris
-      81: { championships: 0, wins: 0, podiums: 4, poles: 0, races: 34 }, // Piastri
-      14: { championships: 2, wins: 32, podiums: 106, poles: 22, races: 393 }, // Alonso
-      18: { championships: 0, wins: 0, podiums: 3, poles: 1, races: 155 }, // Stroll
-      10: { championships: 0, wins: 1, podiums: 4, poles: 0, races: 134 }, // Gasly
-      31: { championships: 0, wins: 1, podiums: 3, poles: 0, races: 145 }, // Ocon
-      23: { championships: 0, wins: 0, podiums: 2, poles: 0, races: 93 }, // Albon
-      2: { championships: 0, wins: 0, podiums: 0, poles: 0, races: 34 }, // Sargeant
-      22: { championships: 0, wins: 0, podiums: 0, poles: 0, races: 78 }, // Tsunoda
-      3: { championships: 0, wins: 8, podiums: 32, poles: 3, races: 251 }, // Ricciardo
-      77: { championships: 0, wins: 10, podiums: 67, poles: 20, races: 234 }, // Bottas
-      24: { championships: 0, wins: 0, podiums: 0, poles: 0, races: 56 }, // Zhou
-      20: { championships: 0, wins: 0, podiums: 1, poles: 1, races: 175 }, // Magnussen
-      27: { championships: 0, wins: 0, podiums: 0, poles: 1, races: 218 }, // Hulkenberg
-    };
-
-    if (currentStatsOverride[driverNumber]) {
-      setStats(currentStatsOverride[driverNumber]);
-      return;
-    }
-
     setLoading(true);
 
     const fetchStats = async () => {
       try {
-        // Step 1: Find exact driverRef using 2024 drivers list
-        const driverInfoRes = await fetch(`https://api.jolpi.ca/ergast/f1/2024/drivers.json`);
+        // Match current driver by name first: racing numbers can change across seasons.
+        const year = new Date().getUTCFullYear();
+        const driverInfoRes = await fetch(`https://api.jolpi.ca/ergast/f1/${year}/drivers.json`);
         const driverInfoData = await driverInfoRes.json();
         let drivers = driverInfoData?.MRData?.DriverTable?.Drivers || [];
-        let driverMatch = drivers.find((d: any) => d.permanentNumber === driverNumber.toString());
+        const normalized = fullName?.toLowerCase().trim();
+        let driverMatch = drivers.find((d: any) => normalized &&
+          `${d.givenName} ${d.familyName}`.toLowerCase() === normalized);
+        if (!driverMatch) driverMatch = drivers.find((d: any) => d.permanentNumber === driverNumber.toString());
 
         if (!driverMatch) {
           const allDriversRes = await fetch(`https://api.jolpi.ca/ergast/f1/drivers.json?limit=1000`);
@@ -127,7 +102,7 @@ function useDriverCareerStats(driverNumber?: number): { stats: DriverCareerStats
     };
 
     fetchStats();
-  }, [driverNumber]);
+  }, [driverNumber, fullName]);
 
   return { stats, loading };
 }
@@ -139,7 +114,8 @@ export default function DriverPage() {
 
   const { data: drivers, isLoading, isError } = useDriver(id);
   const driver = drivers && drivers.length > 0 ? drivers[drivers.length - 1] : undefined;
-  const { stats, loading: statsLoading } = useDriverCareerStats(driver?.driver_number);
+  const { stats, loading: statsLoading } = useDriverCareerStats(driver?.driver_number, driver?.full_name);
+  const { favorite, toggle } = useFavorite("driver", driver?.full_name || "");
 
   const [news, setNews] = useState<F1NewsItem[]>([]);
   const [loadingNews, setLoadingNews] = useState(true);
@@ -188,6 +164,10 @@ export default function DriverPage() {
             className="text-white/70 hover:text-white flex items-center gap-2 w-fit transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          <button type="button" onClick={toggle} aria-pressed={favorite}
+            className="rounded-md border border-white/40 bg-black/50 px-3 py-2 text-sm text-white w-fit">
+            {favorite ? "★ Saved driver" : "☆ Save driver"}
           </button>
           <div className="mt-auto">
             <div className="text-white text-2xl md:text-3xl font-medium leading-none">{driver.first_name}</div>

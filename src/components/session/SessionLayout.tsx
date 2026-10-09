@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { ArrowLeft, Timer, Map, Car, BarChart2, CloudLightning, Radio } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { recordRecentSession } from "@/lib/recent-sessions";
 import { Play } from "lucide-react";
 
 const sessionTabs = [
@@ -26,9 +27,25 @@ export function SessionLayout({ children }: { children: React.ReactNode }) {
 
   const { data: sessionData } = useSessionDetails(sessionKey || undefined);
   const session = sessionData?.[0];
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 30_000);
+    return () => clearInterval(interval);
+  }, []);
+  useEffect(() => {
+    if (sessionKey && session?.session_name) {
+      recordRecentSession({
+        key: sessionKey,
+        name: session.session_name,
+        circuit: session.circuit_short_name || "",
+      });
+    }
+  }, [sessionKey, session?.session_name, session?.circuit_short_name]);
+  const start = session ? Date.parse(session.date_start) : NaN;
+  const end = session ? Date.parse(session.date_end) : NaN;
+  const isLive = Number.isFinite(start) && Number.isFinite(end) && currentTime >= start && currentTime <= end;
 
-  // We need meeting to get the country and flag, wait session has country_key?
-  // OpenF1 session has country_key, circuit_short_name, session_name
+  // Session metadata comes from the selected OpenF1 session.
   
   if (!isReady) return null;
 
@@ -66,7 +83,7 @@ export function SessionLayout({ children }: { children: React.ReactNode }) {
                   href={`/stream?key=${sessionKey}`}
                   className="px-4 py-2 bg-[var(--color-f1-red)] hover:bg-[var(--color-f1-red-hover)] text-white rounded-lg text-sm font-bold uppercase tracking-widest transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(255,24,1,0.4)]"
                 >
-                  <Play className="w-4 h-4" /> Watch Live
+                  <Play className="w-4 h-4" /> {isLive ? "Watch Live" : "Stream details"}
                 </Link>
                 <p className="text-sm font-bold text-[var(--color-f1-red)] uppercase tracking-widest bg-[var(--color-f1-red)]/10 px-2 py-2 rounded-lg inline-block border border-[var(--color-f1-red)]/20 shadow-[0_0_10px_rgba(255,24,1,0.1)]">
                   {session.session_type}

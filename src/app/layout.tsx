@@ -17,7 +17,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Formula Data",
+  metadataBase: new URL("https://formuladata.miosmooth.com"),
+  title: { default: "Formula Data", template: "%s | Formula Data" },
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "https://formuladata.miosmooth.com",
+    siteName: "Formula Data",
+    title: "Formula Data — F1 Telemetry & Race Analysis",
+    description: "Explore F1 timing, telemetry, strategy and racing results.",
+  },
   description: "F1 Data and Telemetry Platform",
   verification: {
     google: "wRwGwt4Cmi-4UpGY2YHnDKE4VkY0j-RiyPfsZr6gbl0",

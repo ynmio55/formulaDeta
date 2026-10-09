@@ -1,5 +1,7 @@
+import { checkApiRateLimit } from "@/lib/api-rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { getJolpiFallback } from "@/lib/jolpi-fallback";
+import { validateOpenF1Query, cacheControlFor } from "@/lib/openf1/proxy-policy";
 
 // We require the endpoint to be exactly one of the allowed 18 endpoints
 const ALLOWED_ENDPOINTS = new Set([
@@ -28,10 +30,16 @@ export async function GET(
   { params }: { params: Promise<{ endpoint: string[] }> }
 ) {
   try {
+    const rate = await checkApiRateLimit(request);
+    if (rate && !rate.allowed) {
+      return NextResponse.json({ error: "Too many requests" }, {
+        status: 429, headers: { "Retry-After": String(rate.retryAfter), "Cache-Control": "no-store" },
+      });
+    }
     const { endpoint } = await params;
     const endpointName = endpoint[0];
 
-    if (!endpointName || !ALLOWED_ENDPOINTS.has(endpointName)) {
+    if (endpoint.length !== 1 || !endpointName || !ALLOWED_ENDPOINTS.has(endpointName)) {
       return NextResponse.json(
         { error: "Invalid or unauthorized endpoint" },
         { status: 400 }
@@ -41,6 +49,9 @@ export async function GET(
     const openF1Base = process.env.OPENF1_API_BASE_URL || "https://api.openf1.org/v1";
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
+    if (!validateOpenF1Query(searchParams)) {
+      return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
+    }
     
     const targetUrl = `${openF1Base}/${endpointName}${queryString ? `?${queryString}` : ""}`;
 
@@ -58,45 +69,40 @@ export async function GET(
       headers["x-api-key"] = process.env.OPENF1_API_KEY;
     }
 
-    const res = await fetch(targetUrl, {
-      signal: controller.signal,
-      headers,
-    });
-
-    clearTimeout(timeoutId);
+    let res: Response;
+    try {
+      res = await fetch(targetUrl, {
+        signal: controller.signal,
+        headers,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!res.ok) {
       // If API returns an error (404 Not Found for beta endpoints, 401/403 blocked, etc.), try Jolpi fallback
-      const fallbackData = await getJolpiFallback(endpointName, searchParams);
+      // A fallback is only safe for standings, and must not mask auth/rate-limit errors.
+      const fallbackData = [404, 500, 502, 503, 504].includes(res.status) &&
+        ["championship_drivers", "championship_teams"].includes(endpointName)
+          ? await getJolpiFallback(endpointName, searchParams)
+          : null;
       if (fallbackData) {
         return NextResponse.json(fallbackData);
       }
 
-      const errorText = await res.text().catch(() => "");
       return NextResponse.json(
-        { error: `Upstream error: ${res.statusText}`, details: errorText },
-        { status: res.status }
+        { error: res.status === 429 ? "Upstream rate limit exceeded" : "Upstream API unavailable", upstreamStatus: res.status },
+        { status: res.status, headers: {
+          "Cache-Control": "no-store",
+          ...(res.status === 429 ? { "Retry-After": res.headers.get("retry-after") || "60" } : {})
+        }}
       );
     }
 
     // Proxy the response
     const data = await res.json();
 
-    // Cache historical data (meetings, sessions, results) for a long time
-    // Cache live data (telemetry, weather) for a short time
-    let cacheControl = "public, max-age=60, s-maxage=120"; // default 1-2 mins
-    
-    if (["meetings", "sessions", "session_result", "starting_grid"].includes(endpointName)) {
-      cacheControl = "public, max-age=3600, s-maxage=86400"; // 1h browser, 24h CDN
-    } else if (["car_data", "location"].includes(endpointName)) {
-      // Telemetry might be cached for a long time if it's historical
-      const isLatest = searchParams.get("session_key") === "latest" || searchParams.get("meeting_key") === "latest";
-      if (!isLatest) {
-        cacheControl = "public, max-age=3600, s-maxage=86400"; // Historical telemetry never changes
-      } else {
-        cacheControl = "public, max-age=10, s-maxage=10"; // Short cache for live
-      }
-    }
+    const cacheControl = cacheControlFor(endpointName, searchParams);
 
     return NextResponse.json(data, {
       headers: {
@@ -111,7 +117,7 @@ export async function GET(
       );
     }
     return NextResponse.json(
-      { error: "Internal Server Error", details: error.message },
+      { error: "Internal Server Error" },
       { status: 500 }
     );
   }

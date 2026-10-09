@@ -15,7 +15,7 @@ export type ComplexQueryValue = {
   [K in QueryOperator]?: QueryValue;
 };
 
-export type QueryParamValue = QueryValue | QueryValue[] | ComplexQueryValue;
+export type QueryParamValue = QueryValue | QueryValue[] | ComplexQueryValue | undefined;
 
 export type QueryParams = {
   [key: string]: QueryParamValue;

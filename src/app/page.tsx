@@ -35,7 +35,7 @@ import { NewsCard, NewsCardSkeleton } from "@/components/media/NewsCard";
 import { VideoCard, VideoCardSkeleton } from "@/components/media/VideoCard";
 
 // Timeline Component
-function RaceWeekendTimeline({ sessions, currentSessionKey, gmtOffset }: { sessions: any[], currentSessionKey: number | null | undefined, gmtOffset: string }) {
+function RaceWeekendTimeline({ sessions, gmtOffset, currentTime }: { sessions: any[], gmtOffset: string, currentTime: number }) {
   if (!sessions || sessions.length === 0) return null;
   
   return (
@@ -43,8 +43,10 @@ function RaceWeekendTimeline({ sessions, currentSessionKey, gmtOffset }: { sessi
       <div className="absolute left-[15px] top-4 bottom-4 w-px bg-[var(--color-border-subtle)]"></div>
       
       {sessions.map((session) => {
-        const isCurrent = session.session_key === currentSessionKey;
-        const isCompleted = currentSessionKey ? session.session_key < currentSessionKey : false;
+        const start = Date.parse(session.date_start);
+        const end = session.date_end ? Date.parse(session.date_end) : NaN;
+        const isCurrent = Number.isFinite(start) && Number.isFinite(end) && currentTime >= start && currentTime <= end;
+        const isCompleted = Number.isFinite(end) && currentTime > end;
         
         return (
           <Link 
@@ -91,7 +93,7 @@ function RaceWeekendTimeline({ sessions, currentSessionKey, gmtOffset }: { sessi
 }
 
 export default function OverviewDashboard() {
-  const { data: latestMeeting, isLoading: loadingMeeting } = useLatestMeeting();
+  const { data: latestMeeting, isLoading: loadingMeeting, dataUpdatedAt: meetingUpdatedAt } = useLatestMeeting();
   const { t, isReady } = useTranslation();
   const { setYear } = useAppStore();
   const router = useRouter();
@@ -157,6 +159,9 @@ export default function OverviewDashboard() {
 
   return (
     <div className="space-y-6 w-full max-w-[1920px] mx-auto animate-in fade-in duration-700">
+      <p className="text-right text-xs text-[var(--color-text-tertiary)]">
+        Meeting data fetched: {meetingUpdatedAt ? new Date(meetingUpdatedAt).toLocaleString() : "Unavailable"}
+      </p>
       
       {/* 1. HERO COMMAND CENTER */}
       <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border-strong)] bg-black h-[280px] md:h-[320px] flex flex-col justify-end p-6 md:p-10 group">
@@ -378,7 +383,7 @@ export default function OverviewDashboard() {
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 -mr-4 relative">
             {sessions ? (
-              <RaceWeekendTimeline sessions={sessions} currentSessionKey={sessionKey} gmtOffset={meeting.gmt_offset} />
+              <RaceWeekendTimeline sessions={sessions} gmtOffset={meeting.gmt_offset} currentTime={liveNow.getTime()} />
             ) : (
               <div className="flex items-center justify-center h-full text-[var(--color-text-tertiary)] animate-pulse">Loading schedule...</div>
             )}
