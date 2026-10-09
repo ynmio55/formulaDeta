@@ -22,10 +22,17 @@ function CompareContent() {
   const { data: drivers, isLoading: loadingDrivers } = useDrivers(activeSessionKey || undefined);
 
   const queryClient = useQueryClient();
-  const [selectedDrivers, setSelectedDrivers] = useState<number[]>([]);
-  const [selectedLap, setSelectedLap] = useState(0); // 0 = fastest valid lap per driver
+  const [selectedDrivers, setSelectedDrivers] = useState<number[]>(() =>
+    (searchParams.get("drivers") || "").split(",").map(Number)
+      .filter(n => Number.isSafeInteger(n) && n > 0 && n < 1000).slice(0, 4)
+  );
+  const [selectedLap, setSelectedLap] = useState(() => {
+    const candidate = Number(searchParams.get("lap") || 0);
+    return Number.isSafeInteger(candidate) && candidate >= 0 && candidate <= 200 ? candidate : 0;
+  }); // 0 = fastest valid lap per driver
   const { data: availableLaps } = useLaps(activeSessionKey || undefined, selectedDrivers[0]);
   const [telemetryError, setTelemetryError] = useState<string | null>(null);
+  const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [telemetryData, setTelemetryData] = useState<Record<number, CarData[]>>({});
   const [isLoadingTelemetry, setIsLoadingTelemetry] = useState(false);
 
@@ -187,6 +194,24 @@ function CompareContent() {
         .sort((a,b) => (a.lap_duration || Infinity) - (b.lap_duration || Infinity))[0]
     : (availableLaps || []).find(l => l.lap_number === selectedLap);
 
+  const shareSelection = async () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("key", String(activeSessionKey));
+    url.searchParams.set("drivers", selectedDrivers.join(","));
+    url.searchParams.set("lap", String(selectedLap));
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({ title: "Formula Data telemetry", url: url.toString() });
+        setShareStatus("Shared");
+      } else {
+        await navigator.clipboard.writeText(url.toString());
+        setShareStatus("Share link copied");
+      }
+    } catch {
+      setShareStatus("Could not share automatically; copy the address from your browser.");
+    }
+  };
+
   const exportCsv = () => {
     const rows = ["driver,date,speed,throttle,brake,gear"];
     selectedDrivers.forEach(number => {
@@ -267,7 +292,11 @@ function CompareContent() {
                 </div>
               )}
               
-              <button type="button" onClick={exportCsv} className="rounded border border-gray-600 p-2 text-sm">Export CSV</button>
+              <div className="flex flex-wrap items-center gap-3">
+                <button type="button" onClick={exportCsv} className="rounded border border-gray-600 p-2 text-sm">Export CSV</button>
+                <button type="button" onClick={() => void shareSelection()} className="rounded border border-gray-600 p-2 text-sm">Share selection</button>
+                {shareStatus && <span role="status" className="text-xs text-gray-400">{shareStatus}</span>}
+              </div>
               {(["brake", "n_gear"] as const).map(field => (
                 <div key={field} className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl p-4">
                   <h3 className="font-medium ml-2 mb-2">{field === "brake" ? "Brake" : "Gear"} Trace</h3>
