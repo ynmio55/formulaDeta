@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { usePitStops, useDrivers, useSessionDetails } from "@/hooks/openf1";
+import { usePitStops, useDrivers, useSessionDetails, useStints } from "@/hooks/openf1";
 import { formatDateTime } from "@/lib/date-utils";
 import { useTranslation } from "@/i18n/config";
 import { Car } from "lucide-react";
@@ -15,6 +15,7 @@ function StrategyContent() {
   const { t } = useTranslation();
   const { data: pits, isLoading: loadingPits } = usePitStops(sessionKey || undefined);
   const { data: drivers } = useDrivers(sessionKey || undefined);
+  const { data: stints, isLoading: loadingStints, isError: stintsError } = useStints(sessionKey || undefined);
   const { data: sessionDetailsData } = useSessionDetails(sessionKey || undefined);
   
   const gmtOffset = sessionDetailsData?.[0]?.gmt_offset;
@@ -29,6 +30,15 @@ function StrategyContent() {
     );
   }
 
+  const tyreColors: Record<string, string> = {
+    SOFT: "#ef4444", MEDIUM: "#eab308", HARD: "#f3f4f6",
+    INTERMEDIATE: "#22c55e", WET: "#3b82f6",
+  };
+  const groupedStints = new Map<number, NonNullable<typeof stints>>();
+  for (const stint of stints || []) {
+    groupedStints.set(stint.driver_number, [...(groupedStints.get(stint.driver_number) || []), stint]);
+  }
+  const maxLap = Math.max(1, ...(stints || []).map(stint => stint.lap_end));
   const driverMap = new Map();
   if (drivers) {
     drivers.forEach(d => driverMap.set(d.driver_number, d));
@@ -36,6 +46,43 @@ function StrategyContent() {
 
   return (
     <div className="space-y-6">
+      <section aria-label="Tyre stint strategy" className="rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] p-4 md:p-6">
+        <h2 className="mb-1 text-lg font-semibold">Tyre Stint Timeline</h2>
+        <p className="mb-5 text-xs text-[var(--color-text-tertiary)]">Recorded stint data · tyre compound and lap ranges</p>
+        {loadingStints ? (
+          <div role="status" className="animate-pulse space-y-3">
+            {[1,2,3].map(i => <div key={i} className="h-10 rounded bg-[var(--color-surface-2)]" />)}
+          </div>
+        ) : stintsError ? (
+          <p role="alert" className="text-sm text-red-400">Could not retrieve tyre stint data for this session.</p>
+        ) : groupedStints.size === 0 ? (
+          <p className="text-sm text-[var(--color-text-secondary)]">No tyre stint records available.</p>
+        ) : (
+          <div className="space-y-3 overflow-x-auto">
+            {[...groupedStints.entries()].sort(([a],[b]) => a-b).map(([number, group]) => (
+              <div key={number} className="flex min-w-[440px] items-center gap-3">
+                <span className="w-28 shrink-0 truncate text-xs font-medium" title={driverMap.get(number)?.full_name}>
+                  {driverMap.get(number)?.name_acronym || ("#" + number)}
+                </span>
+                <div className="flex h-9 flex-1 gap-px overflow-hidden rounded-md bg-[var(--color-surface-2)]">
+                  {[...group].sort((a,b) => a.stint_number - b.stint_number).map(stint => {
+                    const label = stint.compound || "UNKNOWN";
+                    return (
+                      <div key={stint.stint_number} title={label + " · laps " + stint.lap_start + "–" + stint.lap_end}
+                        aria-label={"Car " + number + ", " + label + ", laps " + stint.lap_start + " to " + stint.lap_end}
+                        style={{width: (Math.max(1, stint.lap_end - stint.lap_start + 1) / maxLap * 100) + "%",
+                          backgroundColor: tyreColors[label.toUpperCase()] || "#64748b"}}
+                        className="flex items-center justify-center overflow-hidden text-[10px] font-bold text-black">
+                        <span className="truncate px-1">{label.charAt(0)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
       <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-xl overflow-hidden shadow-sm">
         {loadingPits ? (
           <div className="p-8 text-center text-gray-500 animate-pulse">{t("state.loading")}</div>
