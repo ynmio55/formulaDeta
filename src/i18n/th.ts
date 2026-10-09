@@ -4,6 +4,9 @@ export const th: Translations = {
   // Navigation
   "nav.overview": "ภาพรวม",
   "nav.season": "ฤดูกาล",
+  "nav.recent": "เซสชันที่เข้าชมล่าสุด",
+  "nav.news": "ข่าว F1",
+  "nav.video": "วิดีโอ F1",
   "nav.meeting": "สนามแข่งขัน",
   "nav.session": "เซสชัน",
   "nav.compare": "เปรียบเทียบ",
