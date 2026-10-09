@@ -52,7 +52,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
     if (queryString.length > MAX_QUERY_LENGTH ||
-        [...searchParams.keys()].some(key => !ALLOWED_QUERY_KEYS.has(key))) {
+        [...searchParams.keys()].some(key => !ALLOWED_QUERY_KEYS.has(key.replace(/(>=|<=|>|<)$/, "")))) {
       return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
     }
     
