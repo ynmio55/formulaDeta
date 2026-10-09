@@ -1,3 +1,4 @@
+import { checkApiRateLimit } from "@/lib/api-rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -10,6 +11,12 @@ const MAX_POINTS = 500;
  * We accept neither arbitrary upstream paths nor unbounded time windows.
  */
 export async function GET(request: NextRequest) {
+  const rate = await checkApiRateLimit(request);
+  if (rate && !rate.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, {
+      status: 429, headers: { "Retry-After": String(rate.retryAfter), "Cache-Control": "no-store" },
+    });
+  }
   const params = new URL(request.url).searchParams;
   const sessionKey = Number(params.get("session_key"));
   const driverNumber = Number(params.get("driver_number"));
