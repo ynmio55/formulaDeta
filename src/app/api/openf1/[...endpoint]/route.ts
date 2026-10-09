@@ -25,6 +25,8 @@ const ALLOWED_ENDPOINTS = new Set([
   "weather",
 ]);
 
+let cachedToken: { value: string; until: number } | null = null;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ endpoint: string[] }> }
@@ -76,8 +78,32 @@ export async function GET(
       "Accept": "application/json",
     };
     
+    // OpenF1 requires short-lived OAuth2 Bearer tokens for subscribed access.
+    // Credentials stay on the server and are never returned to the browser.
+    const username = process.env.OPENF1_USERNAME;
+    const password = process.env.OPENF1_PASSWORD;
+    if (cachedToken && cachedToken.until > Date.now()) {
+      headers.Authorization = `Bearer ${cachedToken.value}`;
+    } else if (username && password) {
+      const tokenResponse = await fetch("https://api.openf1.org/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ username, password }),
+        signal: AbortSignal.timeout(10000),
+        cache: "no-store",
+      });
+      if (tokenResponse.ok) {
+        const tokenData: unknown = await tokenResponse.json();
+        if (typeof tokenData === "object" && tokenData !== null &&
+            "access_token" in tokenData && typeof tokenData.access_token === "string") {
+          cachedToken = { value: tokenData.access_token, until: Date.now() + 45 * 60_000 };
+          headers.Authorization = `Bearer ${tokenData.access_token}`;
+        }
+      }
+    }
+
     // Add API key if provided to bypass live session restrictions
-    if (process.env.OPENF1_API_KEY) {
+    if (!headers.Authorization && process.env.OPENF1_API_KEY) {
       headers["Authorization"] = `Bearer ${process.env.OPENF1_API_KEY}`;
       headers["x-api-key"] = process.env.OPENF1_API_KEY;
     }
@@ -90,6 +116,13 @@ export async function GET(
       });
     } finally {
       clearTimeout(timeoutId);
+    }
+
+    if (!res.ok && (res.status === 401 || res.status === 403)) {
+      return NextResponse.json({
+        error: "OpenF1 access denied. Check OPENF1_API_KEY and the provider subscription for this season.",
+        upstreamStatus: res.status,
+      }, { status: 503, headers: { "Cache-Control": "no-store" } });
     }
 
     if (!res.ok) {

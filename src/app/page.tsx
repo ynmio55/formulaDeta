@@ -93,7 +93,7 @@ function RaceWeekendTimeline({ sessions, gmtOffset, currentTime }: { sessions: a
 }
 
 export default function OverviewDashboard() {
-  const { data: latestMeeting, isLoading: loadingMeeting, dataUpdatedAt: meetingUpdatedAt } = useLatestMeeting();
+  const { data: latestMeeting, isLoading: loadingMeeting, isError: meetingError, error: meetingErrorDetail, refetch: retryMeeting, dataUpdatedAt: meetingUpdatedAt } = useLatestMeeting();
   const { t, isReady } = useTranslation();
   const { setYear } = useAppStore();
   const router = useRouter();
@@ -153,6 +153,14 @@ export default function OverviewDashboard() {
         </div>
       </div>
     );
+  }
+
+  if (meetingError) {
+    return <div role="alert" className="mx-auto mt-8 max-w-3xl rounded-xl border border-red-900 bg-red-950/30 p-8 text-center">
+      <h1 className="mb-3 text-xl font-bold text-red-300">Unable to load Formula 1 calendar</h1>
+      <p className="mb-5 text-sm text-gray-300">{meetingErrorDetail instanceof Error ? meetingErrorDetail.message : "The timing provider is currently unavailable."}</p>
+      <button type="button" onClick={() => void retryMeeting()} className="rounded-md bg-red-700 px-5 py-2 text-white hover:bg-red-600">Retry</button>
+    </div>;
   }
 
   if (!meeting) return <div className="text-[var(--color-text-secondary)] p-8 text-center bg-[var(--color-surface-1)] rounded-xl border border-[var(--color-border-subtle)] m-4">{t("state.noData")}</div>;
