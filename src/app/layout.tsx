@@ -43,13 +43,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--color-bg-base)] text-[var(--color-text-primary)] min-h-screen flex flex-col md:flex-row`}
       >
+        <a href="#main-content" className="sr-only fixed left-4 top-4 z-[100] rounded-md bg-white px-4 py-2 text-black focus:not-sr-only">Skip to main content</a>
         <Providers>
           <Suspense fallback={<div className="w-20 hidden md:block shrink-0 bg-[var(--color-surface-1)] h-screen border-r border-[var(--color-border-subtle)]"></div>}>
             <Navigation />
           </Suspense>
-          <main className="flex-1 w-full overflow-y-auto h-screen bg-[var(--color-bg-base)]">
+          <main id="main-content" tabIndex={-1} className="h-screen min-w-0 w-full flex-1 overflow-y-auto bg-[var(--color-bg-base)]">
             <TopBar />
-            <div className="px-4 2xl:px-8 pt-0 pb-24 md:pb-8">
+            <div className="px-4 pb-28 pt-0 sm:px-6 md:pb-10 lg:px-8 2xl:px-10">
               {children}
             </div>
           </main>
