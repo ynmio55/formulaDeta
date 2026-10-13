@@ -22,7 +22,9 @@ import {
   Newspaper,
   Video,
   Tv,
-  History
+  History,
+  PanelLeft,
+  Menu
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -32,13 +34,28 @@ const navGroups = [
     items: [
       { key: "nav.overview", href: "/", icon: LayoutDashboard },
       { key: "nav.season", href: "/season", icon: Calendar },
-      { key: "nav.recent", href: "/recent", icon: History },
       { key: "nav.championship", href: "/championship", icon: Trophy },
+      { key: "nav.recent", href: "/recent", icon: History },
+    ],
+  },
+  {
+    title: "Analysis",
+    items: [
+      { key: "nav.compare", href: "/compare", icon: BarChart2 },
+      { key: "nav.track", href: "/track", icon: Map },
+      { key: "nav.strategy", href: "/strategy", icon: Flag },
+      { key: "nav.weather", href: "/weather", icon: CloudLightning },
+      { key: "nav.radio", href: "/radio", icon: Radio },
+    ],
+  },
+  {
+    title: "Media",
+    items: [
       { key: "nav.live", href: "/stream", icon: Tv },
       { key: "nav.news", href: "/news", icon: Newspaper },
       { key: "nav.video", href: "/video", icon: Video },
-    ]
-  }
+    ],
+  },
 ];
 
 export default function Navigation() {
@@ -46,6 +63,7 @@ export default function Navigation() {
   const searchParams = useSearchParams();
   const { t, locale, isReady } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
 
   if (!isReady) return null;
@@ -63,7 +81,7 @@ export default function Navigation() {
             isExpanded ? "w-64" : "w-20"
           )}
           onMouseEnter={() => setIsExpanded(true)}
-          onMouseLeave={() => setIsExpanded(false)}
+          onMouseLeave={() => { if (!isPinned) setIsExpanded(false); }}
         >
           {/* Brand Header */}
           <div className="h-16 flex items-center px-5 border-b border-[var(--color-border-subtle)] shrink-0">
@@ -77,8 +95,19 @@ export default function Navigation() {
             </div>
           </div>
 
+          <button
+            type="button"
+            onClick={() => { setIsPinned(pinned => !pinned); setIsExpanded(true); }}
+            aria-label={isPinned ? (locale === "th" ? "เลิกตรึงแถบเมนู" : "Unpin sidebar") : (locale === "th" ? "ตรึงแถบเมนู" : "Pin sidebar")}
+            aria-pressed={isPinned}
+            title={isPinned ? "Unpin sidebar" : "Pin sidebar open"}
+            className="absolute right-2 top-[74px] z-10 rounded-md p-2 text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-surface-3)] hover:text-white focus-visible:text-white"
+          >
+            <PanelLeft className="h-4 w-4" aria-hidden="true" />
+          </button>
+
           {/* Navigation Links */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden pb-6 pt-14 custom-scrollbar">
             <div className="flex flex-col gap-8">
               {navGroups.map((group) => (
                 <div key={locale === "th" ? "เมนูหลัก" : group.title} className="px-3">
@@ -88,7 +117,7 @@ export default function Navigation() {
                       isExpanded ? "opacity-100 px-2" : "opacity-0 h-0 hidden"
                     )}
                   >
-                    {group.title}
+                    {locale === "th" ? (group.title === "Main" ? "หลัก" : group.title === "Analysis" ? "วิเคราะห์" : "ข่าวและวิดีโอ") : group.title}
                   </div>
 
                   <div className="flex flex-col gap-1">
@@ -99,8 +128,10 @@ export default function Navigation() {
                       return (
                         <Link
                           key={item.key}
-                          href={item.href}
+                          href={item.href + (["/compare", "/track", "/strategy", "/weather", "/radio"].includes(item.href) ? keySuffix : "")}
                           title={!isExpanded ? t(item.key) : undefined}
+                          aria-label={t(item.key)}
+                          aria-current={isActive ? "page" : undefined}
                           className={clsx(
                             "flex items-center rounded-lg transition-all duration-200 relative group/item",
                             isExpanded ? "px-3 py-2.5" : "p-3 mx-auto justify-center w-12",
@@ -202,8 +233,8 @@ export default function Navigation() {
           <button type="button" onClick={() => setMoreOpen(open => !open)}
             aria-label="More Formula Data tools" aria-expanded={moreOpen}
             className="flex flex-col items-center gap-1 px-3 py-1.5 min-w-[52px]">
-            <div className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--color-text-tertiary)]"><Search className="h-4 w-4" /></div>
-            <span className="text-[9px] font-bold uppercase tracking-wide">More</span>
+            <div className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--color-text-tertiary)]"><Menu className="h-4 w-4" /></div>
+            <span className="text-[9px] font-bold uppercase tracking-wide">{locale === "th" ? "เพิ่มเติม" : "More"}</span>
           </button>
         </div>
       </div>
