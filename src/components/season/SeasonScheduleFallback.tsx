@@ -188,6 +188,44 @@ export default function SeasonScheduleFallback({
         </>
       )}
 
+      {compact && (
+        <section aria-labelledby="analysis-tools-title" className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="app-kicker">Formula Data / Tools</p>
+              <h2 id="analysis-tools-title" className="mt-1 text-xl font-bold text-white md:text-2xl">
+                {th ? "เครื่องมือวิเคราะห์การแข่งขัน" : "Race analysis tools"}
+              </h2>
+              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+                {th ? "เลือกเซสชันหลัง OpenF1 เปิดให้เข้าถึงอีกครั้ง" : "Choose a session when OpenF1 data becomes available"}
+              </p>
+            </div>
+            <Link href={`/season?year=${year}`} className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-red-400">
+              {words.full} <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { href: "/compare", number: "01", title: "Telemetry", detail: th ? "ความเร็ว จุดเบรก และเปรียบเทียบนักขับ" : "Speed, braking and driver comparison" },
+              { href: "/track", number: "02", title: "Race Replay", detail: th ? "ดูตำแหน่งรถย้อนหลังตามข้อมูลสนาม" : "Replay recorded car positions" },
+              { href: "/strategy", number: "03", title: "Strategy", detail: th ? "เปรียบเทียบกลยุทธ์ยางและเวลาต่อรอบ" : "Tyre stints and lap time trends" },
+            ].map(tool => (
+              <Link key={tool.href} href={tool.href}
+                className="app-panel app-panel-interactive group flex min-h-40 flex-col justify-between p-5">
+                <div className="flex items-start justify-between">
+                  <span className="font-mono text-xs font-bold tracking-widest text-red-400">{tool.number}</span>
+                  <ArrowRight className="h-4 w-4 text-[var(--color-text-tertiary)] transition-transform group-hover:translate-x-1 group-hover:text-white" aria-hidden="true" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">{tool.title}</h3>
+                  <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{tool.detail}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
         {retryOriginal && (
           <button onClick={retryOriginal} type="button" className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600">
