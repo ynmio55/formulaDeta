@@ -31,8 +31,8 @@ export default function TopBar() {
   if (!isReady) return null; // Avoid hydration mismatch
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-center bg-[#0a0a0a] border-b border-[var(--color-border-subtle)] px-4 md:px-8 py-3 mb-6 gap-4 sticky top-0 z-50">
-      <div className="flex-1 w-full sm:w-auto flex items-center gap-4">
+    <div className="sticky top-0 z-40 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]/95 px-4 py-3 backdrop-blur-xl md:px-8">
+      <div className="flex min-w-[220px] flex-1 items-center gap-4">
         {/* Brand Name on the left next to Sidebar */}
         <div className="hidden md:flex items-center">
           <h2 className="text-xl font-bold tracking-tight text-white leading-tight flex items-center gap-1">
@@ -42,7 +42,7 @@ export default function TopBar() {
         <GlobalSearch />
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
         {/* Clock Section */}
         {meeting && (
           <div className="hidden md:flex items-center gap-4 pr-4 border-r border-[var(--color-border-strong)]">
@@ -71,11 +71,12 @@ export default function TopBar() {
 
         {/* Timezone Selector */}
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-gray-400" />
+          <Clock aria-hidden="true" className="w-4 h-4 text-gray-400" />
           <select
+            aria-label={locale === "th" ? "เลือกเขตเวลา" : "Select timezone"}
             value={timezone}
             onChange={(e) => setTimezone(e.target.value as Timezone)}
-            className="bg-[var(--color-surface-1)] border border-[var(--color-border-strong)] rounded-md px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-[var(--color-f1-red)] transition-colors"
+            className="max-w-[145px] rounded-lg border border-[var(--color-border-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-border-hover)] sm:max-w-none sm:text-sm"
           >
             <option value="Asia/Bangkok">{t("timezone.bangkok")}</option>
             <option value="UTC">{t("timezone.utc")}</option>
@@ -88,6 +89,7 @@ export default function TopBar() {
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-gray-400" />
           <select
+            aria-label={locale === "th" ? "เลือกภาษา" : "Select language"}
             value={locale}
             onChange={(e) => setLocale(e.target.value as Locale)}
             className="bg-[var(--color-surface-1)] border border-[var(--color-border-strong)] rounded-md px-2 py-1 text-sm text-gray-300 focus:outline-none focus:border-[var(--color-f1-red)] transition-colors"
